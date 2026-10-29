@@ -9,13 +9,89 @@
 #include "NativeWrapper.hpp"
 #include "RTABMapApp.h"
 #include <rtabmap/core/DBDriverSqlite3.h>
+#include <rtabmap/utilite/ULogger.h>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <exception>
+#include <execinfo.h>
+#include <fcntl.h>
+#include <string>
+#include <unistd.h>
 
 inline RTABMapApp *native(const void *object) {
   return (RTABMapApp *)object;
 }
 
+// Crash diagnostics: warnings, errors and failed assertions go to Documents/rtabmap_log.txt,
+// and a crash writes its stack to Documents/rtabmap_crash.txt. Both are visible in the Files
+// app (UIFileSharingEnabled), so a user can send them without Xcode or iOS analytics.
+static char gCrashPath[1024] = {0};
+
+static void writeCrashReport(const char * reason)
+{
+    fflush(NULL); // best effort: push the buffered log file to disk
+    int fd = open(gCrashPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if(fd < 0)
+    {
+        return;
+    }
+    char header[128];
+    int n = snprintf(header, sizeof(header), "crash at %ld: %s\n", (long)time(0), reason);
+    write(fd, header, n);
+    void * frames[64];
+    int count = backtrace(frames, 64);
+    backtrace_symbols_fd(frames, count, fd);
+    close(fd);
+}
+
+static void crashSignalHandler(int sig)
+{
+    writeCrashReport(strsignal(sig));
+    signal(sig, SIG_DFL);
+    raise(sig);
+}
+
+static void crashTerminateHandler()
+{
+    std::string reason = "uncaught exception";
+    if(std::exception_ptr e = std::current_exception())
+    {
+        try { std::rethrow_exception(e); }
+        catch(const std::exception & ex) { reason += std::string(": ") + ex.what(); }
+        catch(...) {}
+    }
+    writeCrashReport(reason.c_str());
+    abort();
+}
+
+static void installCrashDiagnostics()
+{
+    const char * home = getenv("HOME");
+    if(!home)
+    {
+        return;
+    }
+    std::string documents = std::string(home) + "/Documents/";
+    snprintf(gCrashPath, sizeof(gCrashPath), "%srtabmap_crash.txt", documents.c_str());
+    // Keep the log of the previous run: after a crash, it is the one that matters.
+    rename((documents + "rtabmap_log.txt").c_str(), (documents + "rtabmap_log_previous.txt").c_str());
+    ULogger::setType(ULogger::kTypeFile, documents + "rtabmap_log.txt", false);
+    ULogger::setLevel(ULogger::kWarning);
+    ULogger::setPrintTime(true);
+    ULogger::setPrintWhere(true);
+    std::set_terminate(crashTerminateHandler);
+    for(int sig : {SIGSEGV, SIGBUS, SIGILL, SIGFPE, SIGABRT})
+    {
+        signal(sig, crashSignalHandler);
+    }
+}
+
 const void * createNativeApplication()
 {
+    installCrashDiagnostics();
     RTABMapApp *app = new RTABMapApp();
     return (void *)app;
 }
