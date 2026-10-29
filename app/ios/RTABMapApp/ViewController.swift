@@ -59,7 +59,11 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         STATE_VISUALIZING_WHILE_LOADING, // Camera/Motion off - Loading data while showing optimized mesh
         STATE_VISUALIZING_AND_MEASURING    // Camera/Motion on  - Showing optimized mesh without localizing and measuring tools enabled
     }
-    private var mState: State = State.STATE_WELCOME;
+    private var mState: State = State.STATE_WELCOME {
+        didSet { coverageRadar?.isHidden = mState != .STATE_MAPPING }
+    }
+    private let coverageTracker = CoverageTracker()
+    private var coverageRadar: CoverageRadarView?
     private func getStateString(state: State) -> String {
         switch state {
         case .STATE_WELCOME:
@@ -247,6 +251,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         viewButton.showsMenuAsPrimaryAction = true
         statusLabel.numberOfLines = 0
         statusLabel.text = ""
+        coverageRadar = CoverageRadarView.install(in: view)
         
         updateDatabases()
         
@@ -1201,6 +1206,10 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         }
         
         mLastLightEstimate = frame.lightEstimate?.ambientIntensity
+
+        if mState == .STATE_MAPPING, coverageTracker.add(frame: frame) {
+            coverageRadar?.update(with: coverageTracker)
+        }
         
         if !status.isEmpty && mLastLightEstimate != nil && mLastLightEstimate! < 100 && accept {
             status = "Camera Is Occluded Or Lighting Is Too Dark"
@@ -1624,12 +1633,14 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             present(alertController, animated: true)
         }
         
+        coverageTracker.reset()
         setGLCamera(type: 0);
         startCamera();
     }
     
     func newScan(dataRecordingMode: Bool = false)
     {
+        coverageTracker.reset()
         print("databases.size() = \(databases.size())")
         if(databases.count >= 10 && !mReviewRequested && self.depthSupported)
         {

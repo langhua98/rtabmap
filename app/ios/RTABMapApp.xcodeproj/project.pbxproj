@@ -129,6 +129,7 @@
 		57CE916FC9AC3C918A95D181 /* RoomMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF70B642845E705F16B2554 /* RoomMeasurements.swift */; };
 		95CDA4B76ED8FB7EC9A0C55C /* RoomScanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD052F8E4048BC3EB510CC0D /* RoomScanStore.swift */; };
 		94D7AF9E543C1B7CE8CA0E08 /* RoomPlanModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C967BA4B759C88A155C24471 /* RoomPlanModeView.swift */; };
+		2AFA8CC4A84B256AF53B2F1E /* CoverageRadar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8E91C1D04517C6936AB4BF /* CoverageRadar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -373,6 +374,7 @@
 		4CF70B642845E705F16B2554 /* RoomMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomMeasurements.swift; sourceTree = "<group>"; };
 		BD052F8E4048BC3EB510CC0D /* RoomScanStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomScanStore.swift; sourceTree = "<group>"; };
 		C967BA4B759C88A155C24471 /* RoomPlanModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPlanModeView.swift; sourceTree = "<group>"; };
+		FA8E91C1D04517C6936AB4BF /* CoverageRadar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CoverageRadar.swift; path = RTABMapApp/CoverageRadar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -496,6 +498,7 @@
 				4EB1A66525A0D90B0043C7BF /* RTABMap.swift */,
 				4E2C516525A63119005CEDBD /* DatabaseView.swift */,
 				4E2C516625A63119005CEDBD /* VerticalScrollerView.swift */,
+				FA8E91C1D04517C6936AB4BF /* CoverageRadar.swift */,
 				B4940C12764ACD43E3CC5A61 /* RoomPlanMode */,
 			);
 			name = RTABMapApp;
@@ -888,6 +891,7 @@
 				4EFD0BAE259D501E00575D88 /* band.cpp in Sources */,
 				4EFD0B97259D501E00575D88 /* line.cpp in Sources */,
 				4EB1A66625A0D90B0043C7BF /* RTABMap.swift in Sources */,
+				2AFA8CC4A84B256AF53B2F1E /* CoverageRadar.swift in Sources */,
 				F429E82F02E3BF20B7DF65B7 /* RoomCaptureContainer.swift in Sources */,
 				57CE916FC9AC3C918A95D181 /* RoomMeasurements.swift in Sources */,
 				95CDA4B76ED8FB7EC9A0C55C /* RoomScanStore.swift in Sources */,
