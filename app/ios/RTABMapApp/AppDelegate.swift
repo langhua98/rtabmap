@@ -36,6 +36,20 @@ func setDefaultsFromSettingsBundle() {
     }
 }
 
+/// setDefaultsFromSettingsBundle() never overwrites a stored value, so installs that ran an
+/// older build keep the old defaults that left holes in textured meshes. Apply the new ones once.
+func migrateHoleFillingDefaults() {
+    let defaults = UserDefaults.standard
+    let revisionKey = "HoleFillingDefaultsRevision"
+    guard defaults.integer(forKey: revisionKey) < 1 else { return }
+    defaults.set(1, forKey: "DepthConfidence")
+    defaults.set(false, forKey: "CleanMesh")
+    defaults.set(1, forKey: "TextureVertexColorPolicy")
+    defaults.set(5.0, forKey: "MaxTextureDistance")
+    defaults.set(4, forKey: "MaxDepth")
+    defaults.set(1, forKey: revisionKey)
+}
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -48,7 +62,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         defaults.removeObject(forKey: "Version")
         
         setDefaultsFromSettingsBundle()
-        
+        migrateHoleFillingDefaults()
+
         // Override point for customization after application launch.
         if !ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
             // Ensure that the device supports scene depth and present
