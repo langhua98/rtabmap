@@ -5735,8 +5735,9 @@ cv::Mat DBDriverSqlite3::loadOptimizedMeshQuery(
 							{
 								materialtexCoords[p][0] = serializedTexCoords.at<float>(t + p*2);
 								materialtexCoords[p][1] = serializedTexCoords.at<float>(t + p*2 + 1);
-								UASSERT(materialtexCoords[p][0]>=0.0f && materialtexCoords[p][0] <= 1.0f);
-								UASSERT(materialtexCoords[p][1]>=0.0f && materialtexCoords[p][1] <= 1.0f);
+								// (-1,-1) marks a vertex that no camera textured (kept when CleanMesh is off)
+								UASSERT((materialtexCoords[p][0]>=0.0f && materialtexCoords[p][0] <= 1.0f) || materialtexCoords[p][0] == -1.0f);
+								UASSERT((materialtexCoords[p][1]>=0.0f && materialtexCoords[p][1] <= 1.0f) || materialtexCoords[p][1] == -1.0f);
 							}
 							t+=materialtexCoords.size()*2-1;
 							texCoords->push_back(materialtexCoords);
