@@ -183,6 +183,10 @@ class RTABMapApp : public UEventsHandler {
 		  bool blockRendering);
   bool postExportation(bool visualize);
   bool writeExportedMesh(const std::string & directory, const std::string & name);
+  // Writes a Gaussian splatting training set (COLMAP sparse/0, nerfstudio
+  // transforms.json, sharp keyframes, depths, init point cloud and a coverage
+  // report) to directory. maxImages<=0 keeps every sharp, non-redundant frame.
+  bool exportGaussianSplatDataset(const std::string & directory, int maxImages, bool withDepth);
   int postProcessing(int approach);
   void clearMeasures();
   void showMeasures(bool x, bool y, bool z, bool custom);

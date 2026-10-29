@@ -889,7 +889,11 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         ])
         
         // Export menu
-        let exportMenu = UIMenu(title: "生成模型…", children: [pointCloudMenu, optimizedMeshMenu])
+        let exportMenu = UIMenu(title: "生成模型…", children: [pointCloudMenu, optimizedMeshMenu,
+            UIAction(title: "导出高斯泼溅数据集", image: UIImage(systemName: "sparkles"), handler: { _ in
+                self.exportGaussianSplat()
+            })
+        ])
         
         // Optimized Mesh menu
         let optimizeAdvancedMenu = UIMenu(title: "高级…", children: [
@@ -2482,6 +2486,136 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         })
     }
     
+    // MARK: Gaussian splatting dataset
+
+    func exportGaussianSplat()
+    {
+        let alert = UIAlertController(title: "导出高斯泼溅数据集", message: "自动挑出清晰、不重复的照片，连同相机位置、内参、深度图和初始点云打包成 zip（COLMAP + nerfstudio 格式），电脑上可直接训练高斯泼溅。\n\n文件名：", preferredStyle: .alert)
+        alert.addTextField { (textField) in
+            if self.openedDatabasePath != nil && !self.openedDatabasePath!.path.isEmpty
+            {
+                textField.text = self.openedDatabasePath!.deletingPathExtension().lastPathComponent + "_3dgs"
+            }
+            else
+            {
+                textField.text = Date().getFormattedDate(format: "yyMMdd-HHmmss") + "_3dgs"
+            }
+        }
+        alert.addAction(UIAlertAction(title: "导出", style: .default) { (alertAction) in
+            let fileName = alert.textFields![0].text ?? ""
+            if !fileName.isEmpty
+            {
+                self.writeGaussianSplatDataset(fileName: fileName)
+            }
+        })
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel) { (alertAction) in })
+        self.present(alert, animated: true) {
+            alert.textFields?.first?.selectAll(nil)
+        }
+    }
+
+    private func writeGaussianSplatDataset(fileName: String)
+    {
+        let maxImages = 300 // enough for a room, still trains on a consumer GPU
+        let alertView = UIAlertController(title: "正在导出", message: "正在挑选清晰照片并打包 \(fileName).zip，请稍候…", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { _ in
+            self.dismiss(animated: true)
+            self.progressView = nil
+            self.rtabmap!.cancelProcessing()
+        }))
+
+        let previousState = mState
+        updateState(state: .STATE_PROCESSING)
+        self.progressView = addProgressView(alertView)
+
+        present(alertView, animated: true, completion: {
+            let exportDir = self.getTmpDirectory().appendingPathComponent(self.RTABMAP_EXPORT_DIR)
+            let datasetDir = exportDir.appendingPathComponent(fileName)
+            try? FileManager.default.removeItem(at: exportDir)
+            do {
+                try FileManager.default.createDirectory(at: datasetDir, withIntermediateDirectories: true)
+            }
+            catch
+            {
+                print("Failed adding export directory \(datasetDir)")
+            }
+
+            var zipFileUrl : URL?
+            var report : [String: Any] = [:]
+            DispatchQueue.background(background: {
+                if self.rtabmap!.exportGaussianSplatDataset(directory: datasetDir.path, maxImages: maxImages, withDepth: true)
+                {
+                    if let data = try? Data(contentsOf: datasetDir.appendingPathComponent("report.json")),
+                       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+                    {
+                        report = json
+                    }
+                    do {
+                        zipFileUrl = try Zip.quickZipFiles([datasetDir], fileName: fileName)
+                        print("Zip file \(zipFileUrl!.path) created (size=\(zipFileUrl!.fileSizeString)")
+                    }
+                    catch {
+                        print("Something went wrong while zipping")
+                    }
+                }
+                try? FileManager.default.removeItem(at: exportDir)
+            }, completion:{
+                let canceled = self.progressView == nil
+                if !canceled
+                {
+                    self.dismiss(animated: true)
+                }
+                self.updateState(state: previousState)
+                guard let zipUrl = zipFileUrl else {
+                    self.showToast(message: canceled ? "已取消导出" : "导出失败：清晰的照片太少，请慢一点重新扫描", seconds: 4)
+                    return
+                }
+                self.showGaussianSplatReport(report, zipUrl: zipUrl)
+            })
+        })
+    }
+
+    private func showGaussianSplatReport(_ report: [String: Any], zipUrl: URL)
+    {
+        let images = report["images"] as? Int ?? 0
+        let blurry = report["blurry"] as? Int ?? 0
+        let redundant = report["redundant"] as? Int ?? 0
+        let capped = report["capped"] as? Int ?? 0
+        let weakRatio = report["weak_ratio"] as? Double ?? 0.0
+
+        var message = "\(zipUrl.lastPathComponent)（\(zipUrl.fileSizeString)）已保存到 App 的文稿目录。\n\n可用照片 \(images) 张，丢掉模糊 \(blurry) 张、重复 \(redundant) 张"
+        message += capped > 0 ? "，另有 \(capped) 张因数量上限没放进去。" : "。"
+        if images < 60
+        {
+            message += "\n\n照片偏少，泼溅效果会一般。建议「追加扫描」再绕几圈。"
+        }
+        if blurry > images / 3
+        {
+            message += "\n\n模糊照片偏多，下次扫描时手机移动再慢一点、光线亮一点。"
+        }
+        if weakRatio > 0.3
+        {
+            message += "\n\n约 \(Int(weakRatio*100))% 的区域照片太少，或只从一个方向拍过，泼溅后这些地方会糊或有洞（包里的 weak_areas.ply 标出了位置）。建议点「追加扫描」，走到这些地方换几个高度和角度慢慢补拍，然后重新导出。"
+        }
+        else
+        {
+            message += "\n\n覆盖不错，可以直接拿去训练。"
+        }
+
+        let alertShare = UIAlertController(title: "高斯泼溅数据集已导出", message: message, preferredStyle: .alert)
+        alertShare.addAction(UIAlertAction(title: "分享", style: .default) { (UIAlertAction) -> Void in
+            self.shareFile(zipUrl)
+        })
+        if weakRatio > 0.3 || images < 60
+        {
+            alertShare.addAction(UIAlertAction(title: "追加扫描", style: .default) { (UIAlertAction) -> Void in
+                self.resumeScan()
+            })
+        }
+        alertShare.addAction(UIAlertAction(title: "好", style: .cancel) { (UIAlertAction) -> Void in })
+        self.present(alertShare, animated: true, completion: nil)
+    }
+
     func updateDatabases()
     {
         databases.removeAll()

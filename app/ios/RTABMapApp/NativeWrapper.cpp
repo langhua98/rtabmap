@@ -266,6 +266,19 @@ bool writeExportedMeshNative(const void *object, const char * directory, const c
     return false;
 }
 
+bool exportGaussianSplatDatasetNative(const void *object, const char * directory, int maxImages, bool withDepth)
+{
+    if(object)
+    {
+        return native(object)->exportGaussianSplatDataset(directory, maxImages, withDepth);
+    }
+    else
+    {
+        UERROR("object is null!");
+    }
+    return false;
+}
+
 void initGlContentNative(const void *object) {
     if(object)
     {

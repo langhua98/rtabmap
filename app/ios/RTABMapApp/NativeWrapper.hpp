@@ -59,6 +59,7 @@ bool exportMeshNative(
             bool blockRendering);
 bool postExportationNative(const void *object, bool visualize);
 bool writeExportedMeshNative(const void *object, const char * directory, const char * name);
+bool exportGaussianSplatDatasetNative(const void *object, const char * directory, int maxImages, bool withDepth);
 void initGlContentNative(const void *object);
 void setupGraphicNative(const void *object, int width, int height);
 void onTouchEventNative(const void *object, int touch_count, int event, float x0, float y0, float x1,

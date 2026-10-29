@@ -78,6 +78,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(RTABMAP_LIBLAS)
 #include <rtabmap/core/LASWriter.h>
 #endif
+#include <fstream>
+#include <iomanip>
 
 #define LOW_RES_PIX 2
 #define DEBUG_RENDERING_PERFORMANCE
@@ -5100,3 +5102,559 @@ bool RTABMapApp::handleEvent(UEvent * event)
 	return false;
 }
 
+
+// ---------------------------------------------------------------------------
+// Gaussian splatting dataset export
+// ---------------------------------------------------------------------------
+
+namespace {
+
+struct GSFrame
+{
+	int id;
+	rtabmap::Transform camPose; // rtabmap world -> optical camera
+	rtabmap::CameraModel model; // scaled to the stored RGB size
+	double sharpness;
+	bool kept;
+	cv::Mat depthSmall;          // CV_32FC1, for coverage analysis
+	rtabmap::CameraModel depthSmallModel;
+};
+
+// Variance of the Laplacian on a ~640px wide gray image: higher is sharper.
+double gsSharpness(const cv::Mat & rgb)
+{
+	cv::Mat gray;
+	if(rgb.channels() == 3)
+	{
+		cv::cvtColor(rgb, gray, cv::COLOR_BGR2GRAY);
+	}
+	else
+	{
+		gray = rgb;
+	}
+	if(gray.cols > 640)
+	{
+		cv::resize(gray, gray, cv::Size(), 640.0/gray.cols, 640.0/gray.cols, cv::INTER_AREA);
+	}
+	cv::Mat lap;
+	cv::Laplacian(gray, lap, CV_64F);
+	cv::Scalar mean, stddev;
+	cv::meanStdDev(lap, mean, stddev);
+	return stddev[0]*stddev[0];
+}
+
+double gsMedian(std::vector<double> v)
+{
+	if(v.empty())
+	{
+		return 0.0;
+	}
+	std::nth_element(v.begin(), v.begin()+v.size()/2, v.end());
+	return v[v.size()/2];
+}
+
+std::string gsFrameName(int id)
+{
+	char buf[32];
+	snprintf(buf, sizeof(buf), "frame_%06d", id);
+	return buf;
+}
+
+bool gsWritePly(const std::string & path, const pcl::PointCloud<pcl::PointXYZRGB> & cloud)
+{
+	std::ofstream f(path.c_str(), std::ios::binary);
+	if(!f.is_open())
+	{
+		return false;
+	}
+	f << "ply\nformat binary_little_endian 1.0\n"
+	  << "element vertex " << cloud.size() << "\n"
+	  << "property float x\nproperty float y\nproperty float z\n"
+	  << "property float nx\nproperty float ny\nproperty float nz\n"
+	  << "property uchar red\nproperty uchar green\nproperty uchar blue\n"
+	  << "end_header\n";
+	const float zero[3] = {0.0f, 0.0f, 0.0f};
+	for(size_t i=0; i<cloud.size(); ++i)
+	{
+		const pcl::PointXYZRGB & p = cloud.points[i];
+		float xyz[3] = {p.x, p.y, p.z};
+		unsigned char rgb[3] = {p.r, p.g, p.b};
+		f.write((const char*)xyz, sizeof(xyz));
+		f.write((const char*)zero, sizeof(zero));
+		f.write((const char*)rgb, sizeof(rgb));
+	}
+	return f.good();
+}
+
+} // namespace
+
+bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int maxImages, bool withDepth)
+{
+	LOGI("exportGaussianSplatDataset: dir=%s maxImages=%d depth=%d", directory.c_str(), maxImages, withDepth?1:0);
+	if(!rtabmap_ || !rtabmap_->getMemory())
+	{
+		return false;
+	}
+
+	std::map<int, rtabmap::Transform> poses = rtabmap_->getLocalOptimizedPoses();
+	if(poses.empty())
+	{
+		std::multimap<int, rtabmap::Link> links;
+		rtabmap_->getGraph(poses, links, true, false);
+		if(poses.empty())
+		{
+			UERROR("Empty optimized poses!");
+			return false;
+		}
+		rtabmap_->setOptimizedPoses(poses, links);
+	}
+
+	// Output world: x right, y down, z forward (the COLMAP/OpenCV habit, gravity along +y)
+	const rtabmap::Transform worldOut(
+			0.0f, -1.0f,  0.0f, 0.0f,
+			0.0f,  0.0f, -1.0f, 0.0f,
+			1.0f,  0.0f,  0.0f, 0.0f);
+	// OpenCV camera axes -> OpenGL camera axes (nerfstudio transforms.json)
+	const rtabmap::Transform cvToGl(
+			1.0f,  0.0f,  0.0f, 0.0f,
+			0.0f, -1.0f,  0.0f, 0.0f,
+			0.0f,  0.0f, -1.0f, 0.0f);
+
+	const std::string imagesDir = directory + "/images";
+	const std::string depthsDir = directory + "/depths";
+	const std::string sparseDir = directory + "/sparse/0";
+	const std::string instantDir = directory + "/instantsplat";
+	UDirectory::makeDir(directory);
+	UDirectory::makeDir(imagesDir);
+	UDirectory::makeDir(directory + "/sparse");
+	UDirectory::makeDir(sparseDir);
+	UDirectory::makeDir(instantDir);
+	if(withDepth)
+	{
+		UDirectory::makeDir(depthsDir);
+	}
+
+	exporting_ = true;
+	progressionStatus_.reset(poses.size()*2 + 3);
+
+	// Pass 1: sharpness and camera poses of every keyframe
+	std::vector<GSFrame> frames;
+	for(std::map<int, rtabmap::Transform>::iterator iter=poses.begin(); iter!=poses.end(); ++iter)
+	{
+		if(progressionStatus_.isCanceled())
+		{
+			exporting_ = false;
+			return false;
+		}
+		progressionStatus_.increment();
+		rtabmap::SensorData data = rtabmap_->getMemory()->getNodeData(iter->first, true, false, false, false);
+		if(data.cameraModels().size() != 1 || data.imageCompressed().empty())
+		{
+			continue;
+		}
+		cv::Mat rgb;
+		data.uncompressData(&rgb, 0);
+		if(rgb.empty() || !data.cameraModels()[0].isValidForReprojection())
+		{
+			continue;
+		}
+		GSFrame frame;
+		frame.id = iter->first;
+		frame.model = data.cameraModels()[0];
+		if(frame.model.imageWidth() != rgb.cols)
+		{
+			frame.model = frame.model.scaled(double(rgb.cols)/double(frame.model.imageWidth()));
+		}
+		frame.camPose = iter->second * frame.model.localTransform();
+		frame.sharpness = gsSharpness(rgb);
+		frame.kept = true;
+		frames.push_back(frame);
+	}
+	if(frames.empty())
+	{
+		UERROR("No keyframe with an RGB image to export!");
+		exporting_ = false;
+		return false;
+	}
+
+	// Blur rejection, relative to the temporal neighbors (same view content) and to the whole scan
+	std::vector<double> allScores;
+	for(size_t i=0; i<frames.size(); ++i)
+	{
+		allScores.push_back(frames[i].sharpness);
+	}
+	const double globalMedian = gsMedian(allScores);
+	int blurry = 0;
+	for(size_t i=0; i<frames.size(); ++i)
+	{
+		std::vector<double> window;
+		for(int j=std::max(0, int(i)-3); j<=std::min(int(frames.size())-1, int(i)+3); ++j)
+		{
+			window.push_back(frames[j].sharpness);
+		}
+		if(frames[i].sharpness < 0.5*gsMedian(window) || frames[i].sharpness < 0.2*globalMedian)
+		{
+			frames[i].kept = false;
+			++blurry;
+		}
+	}
+
+	// Drop near-duplicate views (standing still): need 5 cm or ~4 deg from the last kept frame
+	int redundant = 0;
+	int lastKept = -1;
+	for(size_t i=0; i<frames.size(); ++i)
+	{
+		if(!frames[i].kept)
+		{
+			continue;
+		}
+		if(lastKept >= 0 &&
+		   frames[i].camPose.getDistance(frames[lastKept].camPose) < 0.05f &&
+		   frames[i].camPose.getAngle(frames[lastKept].camPose) < 0.07f)
+		{
+			// keep the sharper of the two
+			if(frames[i].sharpness > frames[lastKept].sharpness)
+			{
+				frames[lastKept].kept = false;
+				lastKept = i;
+			}
+			else
+			{
+				frames[i].kept = false;
+			}
+			++redundant;
+			continue;
+		}
+		lastKept = i;
+	}
+
+	std::vector<int> keptIdx;
+	for(size_t i=0; i<frames.size(); ++i)
+	{
+		if(frames[i].kept)
+		{
+			keptIdx.push_back(i);
+		}
+	}
+	// Cap: split the trajectory in maxImages consecutive buckets and keep the sharpest of each
+	int capped = 0;
+	if(maxImages > 0 && (int)keptIdx.size() > maxImages)
+	{
+		std::vector<int> selected;
+		for(int b=0; b<maxImages; ++b)
+		{
+			int lo = b*keptIdx.size()/maxImages;
+			int hi = std::max(lo+1, int((b+1)*keptIdx.size()/maxImages));
+			int best = keptIdx[lo];
+			for(int j=lo+1; j<hi; ++j)
+			{
+				if(frames[keptIdx[j]].sharpness > frames[best].sharpness)
+				{
+					best = keptIdx[j];
+				}
+			}
+			selected.push_back(best);
+		}
+		capped = keptIdx.size() - selected.size();
+		for(size_t i=0; i<keptIdx.size(); ++i)
+		{
+			frames[keptIdx[i]].kept = false;
+		}
+		for(size_t i=0; i<selected.size(); ++i)
+		{
+			frames[selected[i]].kept = true;
+		}
+		keptIdx = selected;
+	}
+	LOGI("exportGaussianSplatDataset: %d keyframes, %d blurry, %d redundant, %d capped, %d kept",
+			(int)frames.size(), blurry, redundant, capped, (int)keptIdx.size());
+	if(keptIdx.size() < 3)
+	{
+		UERROR("Not enough sharp keyframes (%d)!", (int)keptIdx.size());
+		exporting_ = false;
+		return false;
+	}
+
+	// Pass 2: write images/depths and assemble the initialization cloud
+	float maxDepth = maxCloudDepth_ > 0.0f ? std::min(maxCloudDepth_, 5.0f) : 5.0f;
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr assembled(new pcl::PointCloud<pcl::PointXYZRGB>);
+	for(size_t k=0; k<keptIdx.size(); ++k)
+	{
+		if(progressionStatus_.isCanceled())
+		{
+			exporting_ = false;
+			return false;
+		}
+		progressionStatus_.increment(std::max(1, int(frames.size()/keptIdx.size())));
+		GSFrame & frame = frames[keptIdx[k]];
+		rtabmap::SensorData data = rtabmap_->getMemory()->getNodeData(frame.id, true, false, false, false);
+		const std::string name = gsFrameName(frame.id);
+		const cv::Mat & compressed = data.imageCompressed();
+		data.uncompressData();
+		bool written = false;
+		if(compressed.total() > 2 && compressed.ptr<unsigned char>()[0] == 0xFF && compressed.ptr<unsigned char>()[1] == 0xD8)
+		{
+			// already a JPEG: copy the bytes, no re-encoding loss
+			std::ofstream f((imagesDir + "/" + name + ".jpg").c_str(), std::ios::binary);
+			f.write((const char*)compressed.data, compressed.total());
+			written = f.good();
+		}
+		if(!written)
+		{
+			written = cv::imwrite(imagesDir + "/" + name + ".jpg", data.imageRaw(), std::vector<int>{cv::IMWRITE_JPEG_QUALITY, 95});
+		}
+		if(!written)
+		{
+			UERROR("Failed writing image %d", frame.id);
+			exporting_ = false;
+			return false;
+		}
+
+		cv::Mat depth = data.depthRaw();
+		if(!depth.empty())
+		{
+			cv::Mat depthM;
+			if(depth.type() == CV_16UC1)
+			{
+				depth.convertTo(depthM, CV_32F, 0.001);
+			}
+			else
+			{
+				depthM = depth;
+			}
+			if(withDepth)
+			{
+				cv::Mat depthMM;
+				depthM.convertTo(depthMM, CV_16U, 1000.0);
+				cv::imwrite(depthsDir + "/" + name + ".png", depthMM);
+			}
+			int smallW = std::min(64, depthM.cols);
+			double scale = double(smallW)/double(depthM.cols);
+			cv::resize(depthM, frame.depthSmall, cv::Size(smallW, int(depthM.rows*scale+0.5)), 0, 0, cv::INTER_NEAREST);
+			frame.depthSmallModel = frame.model.scaled(double(smallW)/double(frame.model.imageWidth()));
+
+			pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud = rtabmap::util3d::cloudRGBFromSensorData(
+					data, 2, maxDepth, minCloudDepth_, 0, rtabmap::ParametersMap(), std::vector<float>(), depthConfidence_);
+			if(!cloud->empty())
+			{
+				cloud = rtabmap::util3d::removeNaNFromPointCloud(cloud);
+				*assembled += *rtabmap::util3d::transformPointCloud(cloud, poses.at(frame.id));
+			}
+			if(assembled->size() > 2000000)
+			{
+				assembled = rtabmap::util3d::voxelize(assembled, 0.01f);
+			}
+		}
+	}
+	if(!assembled->empty())
+	{
+		assembled = rtabmap::util3d::voxelize(assembled, 0.01f);
+		if(assembled->size() > 1000000)
+		{
+			assembled = rtabmap::util3d::voxelize(assembled, 0.02f);
+		}
+	}
+	progressionStatus_.increment();
+
+	// Coverage: which 25 cm cells are seen by too few views, or only from one direction
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cells = assembled->empty() ? assembled : rtabmap::util3d::voxelize(assembled, 0.25f);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr weak(new pcl::PointCloud<pcl::PointXYZRGB>);
+	int weakFewViews = 0;
+	int weakOneDirection = 0;
+	for(size_t c=0; c<cells->size(); ++c)
+	{
+		const pcl::PointXYZRGB & cell = cells->points[c];
+		int views = 0;
+		Eigen::Vector3f dirSum(0, 0, 0);
+		for(size_t k=0; k<keptIdx.size(); ++k)
+		{
+			const GSFrame & frame = frames[keptIdx[k]];
+			if(frame.depthSmall.empty())
+			{
+				continue;
+			}
+			Eigen::Vector3f center(frame.camPose.x(), frame.camPose.y(), frame.camPose.z());
+			Eigen::Vector3f p(cell.x, cell.y, cell.z);
+			Eigen::Vector3f pc = frame.camPose.inverse().toEigen3f() * p;
+			if(pc.z() < 0.15f || pc.z() > maxDepth)
+			{
+				continue;
+			}
+			const rtabmap::CameraModel & m = frame.depthSmallModel;
+			int u = int(m.fx()*pc.x()/pc.z() + m.cx());
+			int v = int(m.fy()*pc.y()/pc.z() + m.cy());
+			if(u < 0 || v < 0 || u >= frame.depthSmall.cols || v >= frame.depthSmall.rows)
+			{
+				continue;
+			}
+			float d = frame.depthSmall.at<float>(v, u);
+			if(d > 0.0f && d < pc.z() - 0.3f)
+			{
+				continue; // occluded
+			}
+			++views;
+			dirSum += (p - center).normalized();
+		}
+		bool fewViews = views < 3;
+		bool oneDirection = !fewViews && dirSum.norm()/float(views) > 0.99f; // all views within ~8 deg: no parallax
+		if(fewViews || oneDirection)
+		{
+			fewViews ? ++weakFewViews : ++weakOneDirection;
+			pcl::PointXYZRGB pt = cell;
+			pt.r = 255; pt.g = fewViews ? 0 : 160; pt.b = 0;
+			weak->push_back(pt);
+		}
+	}
+	float weakRatio = cells->empty() ? 1.0f : float(weak->size())/float(cells->size());
+
+	// Everything below is written in the output world
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr assembledOut = rtabmap::util3d::transformPointCloud(assembled, worldOut);
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr weakOut = rtabmap::util3d::transformPointCloud(weak, worldOut);
+	gsWritePly(sparseDir + "/points3D.ply", *assembledOut);
+	gsWritePly(directory + "/weak_areas.ply", *weakOut);
+
+	// COLMAP text model
+	{
+		std::ofstream cams((sparseDir + "/cameras.txt").c_str());
+		std::ofstream imgs((sparseDir + "/images.txt").c_str());
+		cams << "# Camera list with one line of data per camera:\n#   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]\n";
+		imgs << "# Image list with two lines of data per image:\n#   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME\n#   POINTS2D[] as (X, Y, POINT3D_ID)\n";
+		cams << std::fixed << std::setprecision(6);
+		imgs << std::fixed << std::setprecision(9);
+		std::map<std::vector<long>, int> cameraIds;
+		for(size_t k=0; k<keptIdx.size(); ++k)
+		{
+			const GSFrame & frame = frames[keptIdx[k]];
+			const rtabmap::CameraModel & m = frame.model;
+			// ARKit refines the intrinsics a little while focusing: share a camera when equal to 0.01 px
+			std::vector<long> key = {m.imageWidth(), m.imageHeight(), lround(m.fx()*100), lround(m.fy()*100), lround(m.cx()*100), lround(m.cy()*100)};
+			int camId;
+			if(cameraIds.find(key) == cameraIds.end())
+			{
+				camId = cameraIds.size()+1;
+				cameraIds.insert(std::make_pair(key, camId));
+				cams << camId << " PINHOLE " << m.imageWidth() << " " << m.imageHeight() << " "
+					 << m.fx() << " " << m.fy() << " " << m.cx() << " " << m.cy() << "\n";
+			}
+			else
+			{
+				camId = cameraIds.at(key);
+			}
+			rtabmap::Transform w2c = (worldOut * frame.camPose).inverse();
+			Eigen::Quaternionf q = w2c.getQuaternionf().normalized();
+			imgs << k+1 << " " << q.w() << " " << q.x() << " " << q.y() << " " << q.z() << " "
+				 << w2c.x() << " " << w2c.y() << " " << w2c.z() << " " << camId << " " << gsFrameName(frame.id) << ".jpg\n\n";
+		}
+		std::ofstream pts((sparseDir + "/points3D.txt").c_str());
+		pts << "# 3D point list with one line of data per point:\n#   POINT3D_ID, X, Y, Z, R, G, B, ERROR, TRACK[] as (IMAGE_ID, POINT2D_IDX)\n";
+		pts << std::fixed << std::setprecision(5);
+		for(size_t i=0; i<assembledOut->size(); ++i)
+		{
+			const pcl::PointXYZRGB & p = assembledOut->points[i];
+			pts << i+1 << " " << p.x << " " << p.y << " " << p.z << " " << int(p.r) << " " << int(p.g) << " " << int(p.b) << " 0\n";
+		}
+		if(!cams.good() || !imgs.good() || !pts.good())
+		{
+			UERROR("Failed writing the COLMAP model");
+			exporting_ = false;
+			return false;
+		}
+	}
+
+	// nerfstudio transforms.json (per-frame intrinsics, OpenGL camera axes)
+	{
+		std::ofstream js((directory + "/transforms.json").c_str());
+		js << std::fixed << std::setprecision(7);
+		js << "{\n  \"camera_model\": \"OPENCV\",\n  \"ply_file_path\": \"sparse/0/points3D.ply\",\n";
+		if(withDepth)
+		{
+			js << "  \"depth_unit_scale_factor\": 0.001,\n";
+		}
+		js << "  \"frames\": [\n";
+		for(size_t k=0; k<keptIdx.size(); ++k)
+		{
+			const GSFrame & frame = frames[keptIdx[k]];
+			const rtabmap::CameraModel & m = frame.model;
+			rtabmap::Transform c2w = worldOut * frame.camPose * cvToGl;
+			const std::string name = gsFrameName(frame.id);
+			js << "    {\"file_path\": \"images/" << name << ".jpg\", ";
+			if(withDepth && !frame.depthSmall.empty())
+			{
+				js << "\"depth_file_path\": \"depths/" << name << ".png\", ";
+			}
+			js << "\"w\": " << m.imageWidth() << ", \"h\": " << m.imageHeight()
+			   << ", \"fl_x\": " << m.fx() << ", \"fl_y\": " << m.fy() << ", \"cx\": " << m.cx() << ", \"cy\": " << m.cy()
+			   << ", \"k1\": 0, \"k2\": 0, \"p1\": 0, \"p2\": 0,\n     \"transform_matrix\": [";
+			for(int r=0; r<4; ++r)
+			{
+				js << (r?", ":"") << "[";
+				for(int c=0; c<4; ++c)
+				{
+					js << (c?", ":"") << (r<3 ? c2w.data()[r*4+c] : (c==3?1.0f:0.0f));
+				}
+				js << "]";
+			}
+			js << "]}" << (k+1<keptIdx.size()?",":"") << "\n";
+		}
+		js << "  ]\n}\n";
+	}
+
+	// Pose-free subset for the existing InstantSplat web flow (it takes up to 16 photos)
+	int instantCount = std::min(16, int(keptIdx.size()));
+	for(int b=0; b<instantCount; ++b)
+	{
+		int lo = b*keptIdx.size()/instantCount;
+		int hi = std::max(lo+1, int((b+1)*keptIdx.size()/instantCount));
+		int best = keptIdx[lo];
+		for(int j=lo+1; j<hi; ++j)
+		{
+			if(frames[keptIdx[j]].sharpness > frames[best].sharpness)
+			{
+				best = keptIdx[j];
+			}
+		}
+		char buf[32];
+		snprintf(buf, sizeof(buf), "img_%02d.jpg", b);
+		UFile::copy(imagesDir + "/" + gsFrameName(frames[best].id) + ".jpg", instantDir + "/" + buf);
+	}
+
+	// Summary read back by the app
+	{
+		std::ofstream rp((directory + "/report.json").c_str());
+		rp << std::fixed << std::setprecision(3);
+		rp << "{\n"
+		   << "  \"keyframes\": " << frames.size() << ",\n"
+		   << "  \"images\": " << keptIdx.size() << ",\n"
+		   << "  \"blurry\": " << blurry << ",\n"
+		   << "  \"redundant\": " << redundant << ",\n"
+		   << "  \"capped\": " << capped << ",\n"
+		   << "  \"graph_nodes\": " << poses.size() << ",\n"
+		   << "  \"points\": " << assembledOut->size() << ",\n"
+		   << "  \"cells\": " << cells->size() << ",\n"
+		   << "  \"weak_cells_few_views\": " << weakFewViews << ",\n"
+		   << "  \"weak_cells_one_direction\": " << weakOneDirection << ",\n"
+		   << "  \"weak_ratio\": " << weakRatio << "\n"
+		   << "}\n";
+	}
+	{
+		std::ofstream rd((directory + "/README.md").c_str());
+		rd << "# 高斯泼溅训练数据\n\n"
+		   "由 RTAB-Map iOS 导出：LiDAR + ARKit 位姿，单位米，无需再跑 COLMAP 位姿估计。\n\n"
+		   "- images/          清晰、不重复的关键帧（JPEG 原图，无畸变）\n"
+		   "- depths/          对应的 LiDAR 深度图（16 位 PNG，毫米）\n"
+		   "- sparse/0/        COLMAP 文本模型（PINHOLE 相机 + 位姿 + points3D），points3D.ply 是初始点云\n"
+		   "- transforms.json  nerfstudio 格式（同一套位姿，含深度路径和初始点云）\n"
+		   "- instantsplat/    均匀挑出的 16 张，给之前网页上的 InstantSplat 流程用\n"
+		   "- weak_areas.ply   视角不足的位置（红：照片太少，橙：只从一个方向拍过）\n"
+		   "- report.json      统计\n\n"
+		   "坐标系：x 右、y 下（重力方向）、z 前，和 COLMAP 习惯一致。\n\n"
+		   "## 训练\n\n"
+		   "- 原版 3DGS：python train.py -s <本目录>\n"
+		   "- nerfstudio：ns-train splatfacto --data <本目录>\n"
+		   "- Brush / Postshot 等桌面软件：按 COLMAP 数据集导入本目录\n";
+	}
+	progressionStatus_.increment();
+	progressionStatus_.finish();
+	exporting_ = false;
+	return true;
+}
