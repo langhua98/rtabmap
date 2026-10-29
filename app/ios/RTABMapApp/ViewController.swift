@@ -951,6 +951,14 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         fileMenuChildren.append(UIAction(title: "New Mapping Session", image: UIImage(systemName: "plus.app"), attributes: actionNewScanEnabled ? [] : .disabled, state: .off, handler: { _ in
             self.newScan()
         }))
+        if(RoomPlanMode.isSupported) {
+            // RoomPlan needs the camera for itself, so only offer it while RTAB-Map's camera is off.
+            let roomPlanEnabled = actionNewScanEnabled && mState != .STATE_CAMERA && mState != .STATE_VISUALIZING_CAMERA
+            fileMenuChildren.append(UIAction(title: "户型扫描（RoomPlan）", image: UIImage(systemName: "square.split.bottomrightquarter"), attributes: roomPlanEnabled ? [] : .disabled, state: .off, handler: { _ in
+                self.session.pause()
+                self.present(RoomPlanMode.makeViewController(), animated: true)
+            }))
+        }
         if(actionOptimizeEnabled) {
             fileMenuChildren.append(optimizeMenu)
         }

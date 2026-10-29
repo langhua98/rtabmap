@@ -125,6 +125,10 @@
 		4EFD0F62259E341C00575D88 /* RTABMapApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EFD0F61259E341C00575D88 /* RTABMapApp.cpp */; };
 		4EFD0F67259E38DE00575D88 /* NativeWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EFD0F66259E38DE00575D88 /* NativeWrapper.cpp */; };
 		4EFD0F70259F847300575D88 /* background_renderer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4EFD0F6E259F847300575D88 /* background_renderer.cc */; };
+		F429E82F02E3BF20B7DF65B7 /* RoomCaptureContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD81D940355F55AF5E1424B /* RoomCaptureContainer.swift */; };
+		57CE916FC9AC3C918A95D181 /* RoomMeasurements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CF70B642845E705F16B2554 /* RoomMeasurements.swift */; };
+		95CDA4B76ED8FB7EC9A0C55C /* RoomScanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD052F8E4048BC3EB510CC0D /* RoomScanStore.swift */; };
+		94D7AF9E543C1B7CE8CA0E08 /* RoomPlanModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C967BA4B759C88A155C24471 /* RoomPlanModeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -365,6 +369,10 @@
 		4EFD0F66259E38DE00575D88 /* NativeWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NativeWrapper.cpp; path = RTABMapApp/NativeWrapper.cpp; sourceTree = SOURCE_ROOT; };
 		4EFD0F6E259F847300575D88 /* background_renderer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = background_renderer.cc; path = ../android/jni/background_renderer.cc; sourceTree = "<group>"; };
 		4EFD0F6F259F847300575D88 /* background_renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = background_renderer.h; path = ../android/jni/background_renderer.h; sourceTree = "<group>"; };
+		0DD81D940355F55AF5E1424B /* RoomCaptureContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomCaptureContainer.swift; sourceTree = "<group>"; };
+		4CF70B642845E705F16B2554 /* RoomMeasurements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomMeasurements.swift; sourceTree = "<group>"; };
+		BD052F8E4048BC3EB510CC0D /* RoomScanStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomScanStore.swift; sourceTree = "<group>"; };
+		C967BA4B759C88A155C24471 /* RoomPlanModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPlanModeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -488,6 +496,7 @@
 				4EB1A66525A0D90B0043C7BF /* RTABMap.swift */,
 				4E2C516525A63119005CEDBD /* DatabaseView.swift */,
 				4E2C516625A63119005CEDBD /* VerticalScrollerView.swift */,
+				B4940C12764ACD43E3CC5A61 /* RoomPlanMode */,
 			);
 			name = RTABMapApp;
 			sourceTree = "<group>";
@@ -751,6 +760,17 @@
 			name = NativeWrapper;
 			sourceTree = "<group>";
 		};
+		B4940C12764ACD43E3CC5A61 /* RoomPlanMode */ = {
+			isa = PBXGroup;
+			children = (
+				0DD81D940355F55AF5E1424B /* RoomCaptureContainer.swift */,
+				4CF70B642845E705F16B2554 /* RoomMeasurements.swift */,
+				BD052F8E4048BC3EB510CC0D /* RoomScanStore.swift */,
+				C967BA4B759C88A155C24471 /* RoomPlanModeView.swift */,
+			);
+			path = RTABMapApp/RoomPlanMode;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -868,6 +888,10 @@
 				4EFD0BAE259D501E00575D88 /* band.cpp in Sources */,
 				4EFD0B97259D501E00575D88 /* line.cpp in Sources */,
 				4EB1A66625A0D90B0043C7BF /* RTABMap.swift in Sources */,
+				F429E82F02E3BF20B7DF65B7 /* RoomCaptureContainer.swift in Sources */,
+				57CE916FC9AC3C918A95D181 /* RoomMeasurements.swift in Sources */,
+				95CDA4B76ED8FB7EC9A0C55C /* RoomScanStore.swift in Sources */,
+				94D7AF9E543C1B7CE8CA0E08 /* RoomPlanModeView.swift in Sources */,
 				4EFD0B9A259D501E00575D88 /* bounding_box.cpp in Sources */,
 				4EFD0F3A259D5D1500575D88 /* CameraMobile.cpp in Sources */,
 				4EFD0BA6259D501E00575D88 /* shaders.cpp in Sources */,
@@ -1059,7 +1083,7 @@
 				);
 				GCC_UNROLL_LOOPS = NO;
 				INFOPLIST_FILE = RTABMapApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1120,7 +1144,7 @@
 				);
 				GCC_UNROLL_LOOPS = NO;
 				INFOPLIST_FILE = RTABMapApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

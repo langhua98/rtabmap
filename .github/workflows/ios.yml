@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - master
+      - 'claude/**'
   pull_request:
     branches:
       - '**'
@@ -60,6 +61,8 @@ jobs:
     if: needs.changes.outputs.relevant == 'true'
     # macos-26 (Tahoe) ships Xcode 26.x, matching the toolchain used to build the prebuilt libraries.
     runs-on: macos-26
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -144,6 +147,20 @@ jobs:
           compression-level: 0
           if-no-files-found: error
           retention-days: ${{ github.event_name == 'pull_request' && 1 || 90 }}
+
+      # Fork only: keep the latest build at a fixed release URL so it can be
+      # downloaded directly, without signing in to GitHub.
+      - name: Publish to latest-ios release
+        if: github.repository != 'introlab/rtabmap' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-ios
+          name: Latest iOS build (unsigned)
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          body: "Unsigned build of ${{ github.sha }}. Sign it with AltStore or Sideloadly to install."
+          files: RTABMapApp-unsigned.ipa
 
   # The only check of this workflow the ruleset requires: a matrix job skipped
   # by `if` does not report its per-entry names, so those cannot be required.
