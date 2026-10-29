@@ -38,7 +38,7 @@
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
-			<integer>3</integer>
+			<integer>4</integer>
 			<key>Key</key>
 			<string>MaxDepth</string>
 			<key>Title</key>

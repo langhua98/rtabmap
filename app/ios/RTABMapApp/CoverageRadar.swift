@@ -35,8 +35,17 @@ final class CoverageTracker {
     private(set) var medianDepth: Float = 0
     private(set) var frameCount = 0
     private var lastUpdate: TimeInterval = 0
+    /// Same filter as the map itself (Settings → 扫描 → 深度置信度), so the radar only
+    /// counts points that will end up in the model.
+    private var minConfidence = UInt8(ARConfidenceLevel.medium.rawValue)
+    /// Floor cells inside the scanned room that have not been seen yet, refreshed by `add(frame:)`.
+    private(set) var missingFloorCells: [Cell] = []
+    private(set) var floorCoverage: Float = 0
 
     func reset() {
+        minConfidence = UInt8(clamping: UserDefaults.standard.integer(forKey: "DepthConfidence"))
+        missingFloorCells = []
+        floorCoverage = 0
         wallHits.removeAll()
         floorCells.removeAll()
         ceilingSamples = 0
@@ -98,7 +107,7 @@ final class CoverageTracker {
                 if let confidenceBase {
                     let confidence = confidenceBase.advanced(by: v * confidenceRowBytes)
                         .assumingMemoryBound(to: UInt8.self)[u]
-                    if confidence < UInt8(ARConfidenceLevel.medium.rawValue) { continue }
+                    if confidence < minConfidence { continue }
                 }
                 let d = depthRow[u]
                 guard d.isFinite, d > 0.1, d < 5 else { continue }
@@ -126,7 +135,33 @@ final class CoverageTracker {
             medianDepth = depths[depths.count / 2]
         }
         frameCount += 1
+        updateFloorCoverage()
         return true
+    }
+
+    /// The room is the box around the well-scanned walls; every cell inside it should
+    /// have floor under it, except where furniture stands.
+    private func updateFloorCoverage() {
+        let walls = wallHits.filter { $0.value >= Self.wellScannedHits }.map(\.key)
+        guard let minX = walls.map(\.x).min(), let maxX = walls.map(\.x).max(),
+              let minZ = walls.map(\.z).min(), let maxZ = walls.map(\.z).max(),
+              maxX - minX >= 4, maxZ - minZ >= 4, maxX - minX <= 100, maxZ - minZ <= 100 else {
+            missingFloorCells = []
+            floorCoverage = 0
+            return
+        }
+        var missing: [Cell] = []
+        var total = 0
+        for x in (minX + 1)..<maxX {
+            for z in (minZ + 1)..<maxZ {
+                let cell = Cell(x: x, z: z)
+                if (wallHits[cell] ?? 0) >= Self.wellScannedHits { continue }
+                total += 1
+                if !floorCells.contains(cell) { missing.append(cell) }
+            }
+        }
+        missingFloorCells = missing
+        floorCoverage = total > 0 ? 1 - Float(missing.count) / Float(total) : 0
     }
 
     /// For each of `sectorCount` world directions around the phone (within 6 m):
@@ -188,8 +223,8 @@ final class CoverageTracker {
         if let nearest = missing.min(by: { turnAngle(toSector: $0) < turnAngle(toSector: $1) }) {
             return "\(directionName(direction(ofSector: nearest)))还没扫到，转过去扫一下"
         }
-        if floorCells.count < 25 {
-            return "四周扫好了，再低头扫一下地面"
+        if floorCoverage < 0.85 {
+            return "地面还有空缺（雷达上的红格子），低头补扫一下"
         }
         if ceilingSamples < 300 {
             return "四周扫好了，再抬头扫一下天花板"
@@ -268,7 +303,7 @@ final class CoverageRadarView: UIView {
     func update(with tracker: CoverageTracker) {
         self.tracker = tracker
         hintLabel.text = tracker.hint()
-        let floor = tracker.floorCells.count >= 25 ? "已扫" : "未扫"
+        let floor = "\(Int((tracker.floorCoverage * 100).rounded()))%"
         let ceiling = tracker.ceilingSamples >= 300 ? "已扫" : "未扫"
         badgeLabel.text = "地面：\(floor)    天花板：\(ceiling)"
         setNeedsDisplay()
@@ -310,6 +345,13 @@ final class CoverageRadarView: UIView {
             // Scanned floor: faint blue.
             UIColor.systemBlue.withAlphaComponent(0.35).setFill()
             for cell in tracker.floorCells {
+                if let p = point(for: cell) {
+                    context.fill(CGRect(x: p.x - cellPoints / 2, y: p.y - cellPoints / 2, width: cellPoints, height: cellPoints))
+                }
+            }
+            // Floor inside the room that has not been seen yet: faint red.
+            UIColor.systemRed.withAlphaComponent(0.4).setFill()
+            for cell in tracker.missingFloorCells {
                 if let p = point(for: cell) {
                     context.fill(CGRect(x: p.x - cellPoints / 2, y: p.y - cellPoints / 2, width: cellPoints, height: cellPoints))
                 }

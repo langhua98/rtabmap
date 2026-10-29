@@ -158,7 +158,7 @@
 			<key>Key</key>
 			<string>MaxTextureDistance</string>
 			<key>DefaultValue</key>
-			<real>3.0</real>
+			<real>5.0</real>
 			<key>Titles</key>
 			<array>
 				<string>不限制</string>
@@ -318,7 +318,7 @@
 			<key>Key</key>
 			<string>CleanMesh</string>
 			<key>DefaultValue</key>
-			<true/>
+			<false/>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -334,7 +334,7 @@
 			<key>Key</key>
 			<string>TextureVertexColorPolicy</string>
 			<key>DefaultValue</key>
-			<integer>0</integer>
+			<integer>1</integer>
 			<key>Titles</key>
 			<array>
 				<string>不上色（标准 OBJ）</string>
