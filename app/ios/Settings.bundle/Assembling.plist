@@ -10,13 +10,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>If you don&apos;t need a very precise point cloud, you can set this to reduce the output point cloud size. This is also used for optimized mesh.</string>
+			<string>不需要很精细的点云时，可以设置这个值来减小导出的点云大小。优化网格也会用到它。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Voxel Size</string>
+			<string>体素大小</string>
 			<key>Key</key>
 			<string>VoxelSize</string>
 			<key>DefaultValue</key>
@@ -29,7 +29,7 @@
 				<string>2 cm</string>
 				<string>1 cm</string>
 				<string>0.5 cm</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -39,20 +39,20 @@
 				<real>0.02</real>
 				<real>0.01</real>
 				<real>0.005</real>
-				<real>0</real>
+				<real>0.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>If the map is large, you may want to increase this to maximize the texture resolution.</string>
+			<string>场景大的话，可以调大这个值来提高贴图清晰度。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Texture Size</string>
+			<string>贴图尺寸</string>
 			<key>Key</key>
 			<string>TextureSize</string>
 			<key>DefaultValue</key>
@@ -78,13 +78,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Note that all textures are still merged into one for visualization, but exported in multiple files.</string>
+			<string>查看时所有贴图仍合成一张，导出时分成多个文件。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Maximum Output Textures</string>
+			<string>最多导出贴图数</string>
 			<key>Key</key>
 			<string>MaximumOutputTextures</string>
 			<key>DefaultValue</key>
@@ -116,13 +116,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>K-nearest neighbors used for normal computation when a mesh is created.</string>
+			<string>生成网格时计算法线用的近邻点数。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Normal K</string>
+			<string>法线近邻数</string>
 			<key>Key</key>
 			<string>NormalK</string>
 			<key>DefaultValue</key>
@@ -148,20 +148,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Maximum distance from a camera for polygons to be textured by this camera.</string>
+			<string>面离相机超过这个距离，就不用这张图贴图。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Max Texture Distance</string>
+			<string>最远贴图距离</string>
 			<key>Key</key>
 			<string>MaxTextureDistance</string>
 			<key>DefaultValue</key>
-			<real>3</real>
+			<real>3.0</real>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
+				<string>不限制</string>
 				<string>5 m</string>
 				<string>4.5 m</string>
 				<string>4 m</string>
@@ -172,27 +172,27 @@
 			</array>
 			<key>Values</key>
 			<array>
-				<real>0</real>
-				<real>5</real>
+				<real>0.0</real>
+				<real>5.0</real>
 				<real>4.5</real>
-				<real>4</real>
+				<real>4.0</real>
 				<real>3.5</real>
-				<real>3</real>
+				<real>3.0</real>
 				<real>2.5</real>
-				<real>2</real>
+				<real>2.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Minimum polygon cluster size to be textured by a camera. This helps to filter sparse textured polygons.</string>
+			<string>一张图至少要贴这么多相连的面，用来过滤零散的贴图。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Min Texture Cluster Size</string>
+			<string>最小贴图块大小</string>
 			<key>Key</key>
 			<string>MinTextureClusterSize</string>
 			<key>DefaultValue</key>
@@ -205,7 +205,7 @@
 				<string>100</string>
 				<string>50</string>
 				<string>10</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -222,22 +222,22 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
-			<string>Optimized</string>
+			<string>已优化</string>
 			<key>FooterText</key>
-			<string>Lowering this parameter decreases reconstruction time, but geometry precision is lower. Minimum polygon size: map length / 2^depth). &quot;Auto&quot; means that depth is chosen so that polygon size is just under 3 cm.</string>
+			<string>调小可以加快重建，但几何精度会降低。最小面的大小 = 场景长度 / 2^深度。「自动」表示让每个面略小于 3 厘米。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Reconstruction Depth</string>
+			<string>重建深度</string>
 			<key>Key</key>
 			<string>ReconstructionDepth</string>
 			<key>DefaultValue</key>
 			<integer>0</integer>
 			<key>Titles</key>
 			<array>
-				<string>Auto</string>
+				<string>自动</string>
 				<string>12</string>
 				<string>11</string>
 				<string>10</string>
@@ -262,20 +262,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Radius used to transfer nearest color from the point cloud to reconstructed mesh. When exporting with texture, if Clean Mesh is also enabled, this will limit the number of polygons textured in holes.</string>
+			<string>把点云的颜色转到网格上时的取色半径。带贴图导出并打开「清理网格」时，它会限制空洞里被贴图的面。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Color Radius</string>
+			<string>取色半径</string>
 			<key>Key</key>
 			<string>ColorRadius</string>
 			<key>DefaultValue</key>
 			<real>0.05</real>
 			<key>Titles</key>
 			<array>
-				<string>Nearest</string>
+				<string>最近</string>
 				<string>2 m</string>
 				<string>1 m</string>
 				<string>0.5 m</string>
@@ -286,13 +286,13 @@
 				<string>0.02 m</string>
 				<string>0.015 m</string>
 				<string>0.01 m</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Values</key>
 			<array>
-				<real>0</real>
-				<real>2</real>
-				<real>1</real>
+				<real>0.0</real>
+				<real>2.0</real>
+				<real>1.0</real>
 				<real>0.5</real>
 				<real>0.2</real>
 				<real>0.1</real>
@@ -301,20 +301,20 @@
 				<real>0.02</real>
 				<real>0.015</real>
 				<real>0.01</real>
-				<real>-1</real>
+				<real>-1.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Clean mesh from textureless or colorless reconstructed polygons.</string>
+			<string>去掉没有贴图或颜色的面。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Clean Mesh</string>
+			<string>清理网格</string>
 			<key>Key</key>
 			<string>CleanMesh</string>
 			<key>DefaultValue</key>
@@ -324,22 +324,22 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Standard OBJ format has colorless polygons where there is no texture. This policy can add color to vertex when exporting the OBJ.</string>
+			<string>标准 OBJ 里没有贴图的面是没有颜色的。这个选项可以在导出 OBJ 时给顶点上色。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Texture Vertex Color Policy</string>
+			<string>顶点上色方式</string>
 			<key>Key</key>
 			<string>TextureVertexColorPolicy</string>
 			<key>DefaultValue</key>
 			<integer>0</integer>
 			<key>Titles</key>
 			<array>
-				<string>Colorless (standard OBJ)</string>
-				<string>Keep color only on textureless polygons</string>
-				<string>Keep all color</string>
+				<string>不上色（标准 OBJ）</string>
+				<string>只给没有贴图的面上色</string>
+				<string>全部上色</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -352,21 +352,21 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>This can be used to filter polygons before texturing.</string>
+			<string>用来在贴图前过滤面。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Polygon Filtering</string>
+			<string>面过滤</string>
 			<key>Key</key>
 			<string>PolygonFiltering</string>
 			<key>DefaultValue</key>
 			<integer>0</integer>
 			<key>Titles</key>
 			<array>
-				<string>Only biggest cluster kept</string>
-				<string>Keep all polygons</string>
+				<string>只保留最大的一块</string>
+				<string>保留所有面</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -378,13 +378,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>The format of exported point cloud data.</string>
+			<string>导出点云用的文件格式。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Export Point Cloud Format</string>
+			<string>点云导出格式</string>
 			<key>Key</key>
 			<string>ExportPointCloudFormat</string>
 			<key>DefaultValue</key>

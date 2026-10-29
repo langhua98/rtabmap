@@ -814,11 +814,12 @@
 			};
 			buildConfigurationList = 4EE015BD259A2AF0008CCE65 /* Build configuration list for PBXProject "RTABMapApp" */;
 			compatibilityVersion = "Xcode 9.3";
-			developmentRegion = en;
+			developmentRegion = "zh-Hans";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 4EE015B9259A2AF0008CCE65;
 			packageReferences = (

@@ -174,19 +174,19 @@ extension DatabaseView: UIContextMenuInteractionDelegate {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { suggestedActions in
            
             // Create an action for sharing
-            let share = UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { action in
+            let share = UIAction(title: "分享", image: UIImage(systemName: "square.and.arrow.up")) { action in
                 // Show system share sheet
                 self.delegate?.databaseShared(databaseURL: self.databaseURL)
             }
     
             // Create an action for renaming
-            let rename = UIAction(title: "Rename", image: UIImage(systemName: "square.and.pencil")) { action in
+            let rename = UIAction(title: "重命名", image: UIImage(systemName: "square.and.pencil")) { action in
                 // Perform renaming
                 self.delegate?.databaseRenamed(databaseURL: self.databaseURL)
             }
     
             // Here we specify the "destructive" attribute to show that it’s destructive in nature
-            let delete = UIAction(title: "Delete", image: UIImage(systemName: "trash"), attributes: .destructive) { action in
+            let delete = UIAction(title: "删除", image: UIImage(systemName: "trash"), attributes: .destructive) { action in
                 // Perform delete
                 self.delegate?.databaseDeleted(databaseURL: self.databaseURL)
             }

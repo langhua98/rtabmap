@@ -67,23 +67,23 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     private func getStateString(state: State) -> String {
         switch state {
         case .STATE_WELCOME:
-            return "Welcome"
+            return "欢迎"
         case .STATE_CAMERA:
-            return "Camera Preview"
+            return "相机预览"
         case .STATE_MAPPING:
-            return mDataRecording ? "Data Recording" : "Mapping"
+            return mDataRecording ? "数据录制" : "扫描中"
         case .STATE_PROCESSING:
-            return "Processing"
+            return "处理中"
         case .STATE_VISUALIZING:
-            return "Visualizing"
+            return "查看模型"
         case .STATE_VISUALIZING_CAMERA:
-            return "Visualizing with Camera"
+            return "相机叠加查看"
         case .STATE_VISUALIZING_WHILE_LOADING:
-            return "Visualizing while Loading"
+            return "加载中查看"
         case .STATE_VISUALIZING_AND_MEASURING:
-            return "Measuring"
+            return "测量"
         default: // IDLE
-            return "Idle"
+            return "空闲"
         }
     }
     
@@ -296,8 +296,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 let availableMem = self.getAvailableMemory()
                 let usedMem = self.mMaximumMemory - availableMem;
                 self.statusLabel.text =
-                    "Status: \(self.getStateString(state: self.mState))\n" +
-                    "RAM Usage (MB): \(usedMem) / \(self.mMaximumMemory)"
+                    "状态：\(self.getStateString(state: self.mState))\n" +
+                    "内存占用（MB）：\(usedMem) / \(self.mMaximumMemory)"
                 self.progressStatusUpdate()
             }
         }
@@ -346,14 +346,14 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 self.setGLCamera(type: 2);
                 
                 self.dismiss(animated: true)
-                self.showToast(message: "Optimized mesh detected in the database, it is shown while the database is loading...", seconds: 3)
+                self.showToast(message: "找到已优化的模型，加载期间先显示它…", seconds: 3)
             }
 
             let availableMem = self.getAvailableMemory()
             let usedMem = self.mMaximumMemory - availableMem;
             self.statusLabel.text =
-                "Status: " + (status == 1 && msg.isEmpty ? self.mState == State.STATE_CAMERA ? "Camera Preview" : "Idle" : msg) + "\n" +
-            	"RAM Usage (MB): \(usedMem) / \(self.mMaximumMemory)"
+                "状态：" + (status == 1 && msg.isEmpty ? self.mState == State.STATE_CAMERA ? "相机预览" : "空闲" : msg) + "\n" +
+            	"内存占用（MB）：\(usedMem) / \(self.mMaximumMemory)"
         }
     }
         
@@ -409,8 +409,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             if self.statusShown {
                 self.statusLabel.text =
                     self.statusLabel.text! +
-                    "Status: \(self.getStateString(state: self.mState))\n" +
-                	"RAM Usage (MB): \(usedMem) / \(self.mMaximumMemory)"
+                    "状态：\(self.getStateString(state: self.mState))\n" +
+                	"内存占用（MB）：\(usedMem) / \(self.mMaximumMemory)"
             }
             if self.debugShown {
                 self.statusLabel.text =
@@ -426,7 +426,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                             bearing = self.mLastKnownLocation!.course
                             
                         }
-                        gpsString = String(format: "GPS: %.2f %.2f %.2fm %ddeg %.0fm [%d sec old]\n",
+                        gpsString = String(format: "GPS：%.2f %.2f %.2f米 %d度 %.0f米 [%d 秒前]\n",
                                            self.mLastKnownLocation!.coordinate.longitude,
                                            self.mLastKnownLocation!.coordinate.latitude,
                                            self.mLastKnownLocation!.altitude,
@@ -436,43 +436,43 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     }
                     else
                     {
-                        gpsString = "GPS: [not yet available]\n";
+                        gpsString = "GPS：[暂不可用]\n";
                     }
                 }
                 var lightString = "\n"
                 if(self.mLastLightEstimate != nil)
                 {
-                    lightString = String("Light (lm): \(Int(self.mLastLightEstimate!))\n")
+                    lightString = String("光照（lm）：\(Int(self.mLastLightEstimate!))\n")
                 }
                 
                 self.statusLabel.text =
                     self.statusLabel.text! +
                     gpsString + //gps
                     lightString + //env sensors
-                    "Time: \(formattedDate)\n" +
-                    "Nodes (WM): \(nodes) (\(nodesDrawn) shown)\n" +
-                    "Words: \(words)\n" +
-                    "Database (MB): \(databaseMemoryUsed)\n" +
-                    "Number of points: \(points)\n" +
-                    "Polygons: \(polygons)\n" +
-                    "Update time (ms): \(Int(updateTime)) / \(self.mTimeThr==0 ? "No Limit" : String(self.mTimeThr))\n" +
-                    "Features: \(featuresExtracted) / \(self.mMaxFeatures==0 ? "No Limit" : (self.mMaxFeatures == -1 ? "Disabled" : String(self.mMaxFeatures)))\n" +
-                    "Rehearsal (%): \(Int(rehearsalValue*100))\n" +
-                    "Loop closures: \(self.mTotalLoopClosures)\n" +
-                    "Inliers: \(inliers)\n" +
-                    "Hypothesis (%): \(Int(hypothesis*100)) / \(Int(self.mLoopThr*100)) (\(loopClosureId>0 ? loopClosureId : highestHypId))\n" +
-                    String(format: "FPS (rendering): %.1f Hz\n", fps) +
-                    String(format: "Travelled distance: %.2f m\n", distanceTravelled) +
-                    String(format: "Pose (x,y,z): %.2f %.2f %.2f", x, y, z)
+                    "时间：\(formattedDate)\n" +
+                    "节点：\(nodes)（显示 \(nodesDrawn)）\n" +
+                    "视觉词：\(words)\n" +
+                    "数据库（MB）：\(databaseMemoryUsed)\n" +
+                    "点数：\(points)\n" +
+                    "面数：\(polygons)\n" +
+                    "更新耗时（ms）：\(Int(updateTime)) / \(self.mTimeThr==0 ? "不限制" : String(self.mTimeThr))\n" +
+                    "特征点：\(featuresExtracted) / \(self.mMaxFeatures==0 ? "不限制" : (self.mMaxFeatures == -1 ? "已关闭" : String(self.mMaxFeatures)))\n" +
+                    "相似度（%）：\(Int(rehearsalValue*100))\n" +
+                    "回环次数：\(self.mTotalLoopClosures)\n" +
+                    "内点：\(inliers)\n" +
+                    "回环假设（%）：\(Int(hypothesis*100)) / \(Int(self.mLoopThr*100)) (\(loopClosureId>0 ? loopClosureId : highestHypId))\n" +
+                    String(format: "渲染帧率：%.1f Hz\n", fps) +
+                    String(format: "移动距离：%.2f 米\n", distanceTravelled) +
+                    String(format: "位置（x,y,z）：%.2f %.2f %.2f", x, y, z)
             }
             if(self.mState == .STATE_MAPPING || self.mState == .STATE_VISUALIZING_CAMERA)
             {
                 if(loopClosureId > 0) {
                     if(self.mState == .STATE_VISUALIZING_CAMERA) {
-                        self.showToast(message: "Localized!", seconds: 1);
+                        self.showToast(message: "已定位！", seconds: 1);
                     }
                     else {
-                        self.showToast(message: "Loop closure detected!", seconds: 1);
+                        self.showToast(message: "识别到之前扫过的位置！", seconds: 1);
                     }
                 }
                 else if(rejected > 0)
@@ -485,7 +485,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                         }
                         else
                         {
-                            self.showToast(message: String(format: "Loop closure rejected, graph optimization failed! You may try a different Graph Optimizer (see Mapping options)."), seconds: 1);
+                            self.showToast(message: String(format: "回环被拒绝，图优化失败！可以在扫描设置里换一种图优化方法。"), seconds: 1);
                         }
                     }
                     else
@@ -494,19 +494,17 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     }
                 }
                 else if(landmarkDetected > 0) {
-                    self.showToast(message: "Landmark \(landmarkDetected) detected!", seconds: 1);
+                    self.showToast(message: "识别到标记 \(landmarkDetected)！", seconds: 1);
                 }
             }
             if(self.mState == .STATE_MAPPING)
             {
                 if(availableMem < 400)
                 {
-                    let msg = "Scanning will be stopped because the free memory is too "
-                    + "low (\(availableMem) MB). You should be able to save the database but some post-processing and exporting options may fail. "
-                    + "\n\nNote that for large environments, you can save multiple databases and "
-                    + "merge them with RTAB-Map Desktop version."
-                    let alert = UIAlertController(title: "Memory is full!", message: msg, preferredStyle: .alert)
-                    let alertActionYes = UIAlertAction(title: "Ok", style: .default) {
+                    let msg = "剩余内存太少（\(availableMem) MB），扫描将停止。仍然可以保存，但有些后期处理和导出可能会失败。"
+                    + "\n\n大范围的场景可以分成几次扫描分别保存，再用电脑版 RTAB-Map 合并。"
+                    let alert = UIAlertController(title: "内存不足！", message: msg, preferredStyle: .alert)
+                    let alertActionYes = UIAlertAction(title: "好", style: .default) {
                         (UIAlertAction) -> Void in
                         self.stopMapping(ignoreSaving: false, offerPostProcessing: false);
                     }
@@ -516,18 +514,16 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 else if(!self.lowMemoryWarningShown && usedMem*3 > availableMem && !self.mDataRecording)
                 {
                     self.lowMemoryWarningShown = true
-                    let msg = "Available memory (\(availableMem) MB) should be at least 3 times the "
-                    + "memory used (\(usedMem) MB) so that some post-processing and exporting options "
-                    + "have enough memory to work correctly. If you just want to save the database "
-                    + "after scanning, you can continue until the next warning.\n\n"
-                    + "Note that showing only point clouds and/or decrease density reduce memory needed for rendering."
-                    let alert = UIAlertController(title: "Memory is full!", message: msg, preferredStyle: .alert)
-                    let alertActionYes = UIAlertAction(title: "Stop Now", style: .default) {
+                    let msg = "剩余内存（\(availableMem) MB）至少要是已用内存（\(usedMem) MB）的 3 倍，后期处理和导出才能正常运行。"
+                    + "如果扫完只想保存，可以继续扫到下一次提醒。\n\n"
+                    + "只显示点云或者降低点云密度，可以减少显示占用的内存。"
+                    let alert = UIAlertController(title: "内存不足！", message: msg, preferredStyle: .alert)
+                    let alertActionYes = UIAlertAction(title: "立即停止", style: .default) {
                         (UIAlertAction) -> Void in
                         self.stopMapping(ignoreSaving: false);
                     }
                     alert.addAction(alertActionYes)
-                    let alertActionNo = UIAlertAction(title: "Continue", style: .cancel) {
+                    let alertActionNo = UIAlertAction(title: "继续", style: .cancel) {
                         (UIAlertAction) -> Void in
                     }
                     alert.addAction(alertActionNo)
@@ -542,7 +538,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         {
             DispatchQueue.main.async {
                 self.dismiss(animated: true)
-                self.showToast(message: "ARKit re-localization filtered because an acceleration of \(value) has been detected, which is over current threshold set in the settings.", seconds: 3)
+                self.showToast(message: "检测到加速度 \(value)，超过了设置里的阈值，已忽略这次 ARKit 重新定位。", seconds: 3)
             }
         }
     }
@@ -566,13 +562,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         
         if(mMapNodes > 0 && self.openedDatabasePath == nil)
         {
-            let msg = "RTAB-Map has been pushed to background while mapping. Do you want to save the map now?"
-            let alert = UIAlertController(title: mDataRecording ? "Data Recording Stopped" : "Mapping Stopped!", message: msg, preferredStyle: .alert)
-            let alertActionNo = UIAlertAction(title: "Ignore", style: .cancel) {
+            let msg = "扫描时 App 被切到了后台，要现在保存吗？"
+            let alert = UIAlertController(title: mDataRecording ? "数据录制已停止" : "扫描已停止！", message: msg, preferredStyle: .alert)
+            let alertActionNo = UIAlertAction(title: "忽略", style: .cancel) {
                 (UIAlertAction) -> Void in
             }
             alert.addAction(alertActionNo)
-            let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+            let alertActionYes = UIAlertAction(title: "是", style: .default) {
                 (UIAlertAction) -> Void in
                 self.save()
             }
@@ -613,12 +609,12 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             	{
                 	if(!UserDefaults.standard.bool(forKey: "LidarMode"))
                 	{
-       		        	message = "LiDAR is disabled (Settings->Mapping->LiDAR Mode = OFF), only tracked features will be mapped."
+       		        	message = "激光雷达已关闭（设置 → 扫描 → 激光雷达模式），只会记录特征点，不会生成完整的三维模型。"
        		        	self.setMeshRendering(viewMode: 0)
         	    	}
                 	else if !depthSupported
                 	{
-                    	message = "The device does not have a LiDAR, only tracked features will be mapped. A LiDAR is required for accurate 3D reconstruction."
+                    	message = "这台设备没有激光雷达，只会记录特征点。要生成精确的三维模型，需要带激光雷达的设备。"
                     	self.setMeshRendering(viewMode: 0)
                 	}
                 	else
@@ -640,8 +636,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 
                 if(!message.isEmpty)
                 {
-                    let alertController = UIAlertController(title: "Start Camera", message: message, preferredStyle: .alert)
-                    let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+                    let alertController = UIAlertController(title: "启动相机", message: message, preferredStyle: .alert)
+                    let okAction = UIAlertAction(title: "好", style: .default) { (action) in
                     }
                     alertController.addAction(okAction)
                     present(alertController, animated: true)
@@ -657,9 +653,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 }
             
         default:
-            let alertController = UIAlertController(title: "Camera Disabled", message: "Camera permission is required to start the camera. You can enable it in Settings.", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "相机权限未开启", message: "需要相机权限才能扫描，请到系统设置里打开。", preferredStyle: .alert)
 
-            let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
+            let settingsAction = UIAlertAction(title: "设置", style: .default) { (action) in
                 guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
                     return
                 }
@@ -671,7 +667,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             }
             alertController.addAction(settingsAction)
             
-            let okAction = UIAlertAction(title: "Ignore", style: .default) { (action) in
+            let okAction = UIAlertAction(title: "忽略", style: .default) { (action) in
             }
             alertController.addAction(okAction)
             
@@ -858,7 +854,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         
         if(!exportOBJPLYButton.isHidden) {
             let format = UserDefaults.standard.string(forKey: "ExportPointCloudFormat")!;
-            var title = "Export "
+            var title = "导出 "
             if (self.visualizationType == 2) {
                 title += "OBJ";
             }
@@ -874,86 +870,86 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         }
         
         // PointCloud menu
-        let pointCloudMenu = UIMenu(title: "Point cloud...", children: [
-            UIAction(title: "Current Density", handler: { _ in
+        let pointCloudMenu = UIMenu(title: "点云…", children: [
+            UIAction(title: "当前密度", handler: { _ in
                 self.export(isOBJ: false, meshing: false, regenerateCloud: false, optimized: false, optimizedMaxPolygons: 0, previousState: self.mState)
             }),
-            UIAction(title: "Max Density", handler: { _ in
+            UIAction(title: "最高密度", handler: { _ in
                 self.export(isOBJ: false, meshing: false, regenerateCloud: true, optimized: false, optimizedMaxPolygons: 0, previousState: self.mState)
             })
         ])
         // Optimized Mesh menu
-        let optimizedMeshMenu = UIMenu(title: "Optimized mesh...", children: [
-            UIAction(title: "Colored Mesh", handler: { _ in
+        let optimizedMeshMenu = UIMenu(title: "优化网格…", children: [
+            UIAction(title: "彩色网格", handler: { _ in
                 self.exportMesh(isOBJ: false)
             }),
-            UIAction(title: "Textured Mesh", handler: { _ in
+            UIAction(title: "贴图网格", handler: { _ in
                 self.exportMesh(isOBJ: true)
             })
         ])
         
         // Export menu
-        let exportMenu = UIMenu(title: "Assemble...", children: [pointCloudMenu, optimizedMeshMenu])
+        let exportMenu = UIMenu(title: "生成模型…", children: [pointCloudMenu, optimizedMeshMenu])
         
         // Optimized Mesh menu
-        let optimizeAdvancedMenu = UIMenu(title: "Advanced...", children: [
-            UIAction(title: "Global Graph Optimization", handler: { _ in
+        let optimizeAdvancedMenu = UIMenu(title: "高级…", children: [
+            UIAction(title: "全局图优化", handler: { _ in
                 self.optimization(approach: 0)
             }),
-            UIAction(title: "Detect More Loop Closures", handler: { _ in
+            UIAction(title: "检测更多回环", handler: { _ in
                 self.optimization(approach: 2)
             }),
-            UIAction(title: "Adjust Colors (Fast)", handler: { _ in
+            UIAction(title: "颜色校正（快速）", handler: { _ in
                 self.optimization(approach: 5)
             }),
-            UIAction(title: "Adjust Colors (Full)", handler: { _ in
+            UIAction(title: "颜色校正（完整）", handler: { _ in
                 self.optimization(approach: 6)
             }),
-            UIAction(title: "Mesh Smoothing", handler: { _ in
+            UIAction(title: "网格平滑", handler: { _ in
                 self.optimization(approach: 7)
             }),
-            UIAction(title: "Bundle Adjustment", handler: { _ in
+            UIAction(title: "光束法平差", handler: { _ in
                 self.optimization(approach: 1)
             }),
-            UIAction(title: "Noise Filtering", handler: { _ in
+            UIAction(title: "去除噪点", handler: { _ in
                 self.optimization(approach: 4)
             })
         ])
         
         // Optimize menu
-        let optimizeMenu = UIMenu(title: "Optimize...", children: [
-            UIAction(title: "Standard Optimization", handler: { _ in
+        let optimizeMenu = UIMenu(title: "优化…", children: [
+            UIAction(title: "标准优化", handler: { _ in
                 self.optimization(approach: -1)
             }),
             optimizeAdvancedMenu])
 
         // Advanced menu
-        let advancedMenu = UIMenu(title: "Advanced...", children: [
-            UIAction(title: "New Data Recording", image: UIImage(systemName: "plus.app"), attributes: actionNewDataRecording ? [] : .disabled, state: .off, handler: { _ in
+        let advancedMenu = UIMenu(title: "高级…", children: [
+            UIAction(title: "新建数据录制", image: UIImage(systemName: "plus.app"), attributes: actionNewDataRecording ? [] : .disabled, state: .off, handler: { _ in
             	self.newScan(dataRecordingMode: true)
         	})
         ])
         
         // Measuring menu
-        let measuringMenu = UIMenu(title: "Measuring...", image: UIImage(systemName: "ruler"), children: [
-            UIAction(title: "Plane to Plane Mode", image: measuringMode == 0 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+        let measuringMenu = UIMenu(title: "测量…", image: UIImage(systemName: "ruler"), children: [
+            UIAction(title: "面到面", image: measuringMode == 0 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.measuringMode = 0
                 self.rtabmap!.setMeasuringMode(self.measuringMode)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Point to Point Mode", image: measuringMode == 2 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+            UIAction(title: "点到点", image: measuringMode == 2 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.measuringMode = 2
                 self.rtabmap!.setMeasuringMode(self.measuringMode)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Clear All Measures", image: UIImage(systemName: "trash"), state: .off, handler: { _ in
+            UIAction(title: "清除所有测量", image: UIImage(systemName: "trash"), state: .off, handler: { _ in
                 self.clearMeasures();
                 self.resetNoTouchTimer(true)
             })
         ])
                 
         var fileMenuChildren: [UIMenuElement] = []
-        fileMenuChildren.append(UIAction(title: "New Mapping Session", image: UIImage(systemName: "plus.app"), attributes: actionNewScanEnabled ? [] : .disabled, state: .off, handler: { _ in
+        fileMenuChildren.append(UIAction(title: "新建贴图扫描", image: UIImage(systemName: "plus.app"), attributes: actionNewScanEnabled ? [] : .disabled, state: .off, handler: { _ in
             self.newScan()
         }))
         if(RoomPlanMode.isSupported) {
@@ -968,68 +964,68 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             fileMenuChildren.append(optimizeMenu)
         }
         else {
-            fileMenuChildren.append(UIAction(title: "Optimize...", attributes: .disabled, state: .off, handler: { _ in
+            fileMenuChildren.append(UIAction(title: "优化…", attributes: .disabled, state: .off, handler: { _ in
             }))
         }
         if(actionExportEnabled) {
             fileMenuChildren.append(exportMenu)
         }
         else {
-            fileMenuChildren.append(UIAction(title: "Assemble...", attributes: .disabled, state: .off, handler: { _ in
+            fileMenuChildren.append(UIAction(title: "生成模型…", attributes: .disabled, state: .off, handler: { _ in
             }))
         }
-        fileMenuChildren.append(UIAction(title: "Save", image: UIImage(systemName: "square.and.arrow.down"), attributes: actionSaveEnabled ? [] : .disabled, state: .off, handler: { _ in
+        fileMenuChildren.append(UIAction(title: "保存", image: UIImage(systemName: "square.and.arrow.down"), attributes: actionSaveEnabled ? [] : .disabled, state: .off, handler: { _ in
             self.save()
         }))
-        fileMenuChildren.append(UIAction(title: "Append Scan", image: UIImage(systemName: "play.fill"), attributes: actionResumeEnabled ? [] : .disabled, state: .off, handler: { _ in
+        fileMenuChildren.append(UIAction(title: "追加扫描", image: UIImage(systemName: "play.fill"), attributes: actionResumeEnabled ? [] : .disabled, state: .off, handler: { _ in
             self.resumeScan()
         }))
         if(actionMeasuringEnabled) {
             fileMenuChildren.append(measuringMenu)
         }
         else {
-            fileMenuChildren.append(UIAction(title: "Measuring...", image: UIImage(systemName: "ruler"), attributes: .disabled, state: .off, handler: { _ in
+            fileMenuChildren.append(UIAction(title: "测量…", image: UIImage(systemName: "ruler"), attributes: .disabled, state: .off, handler: { _ in
             }))
         }
         fileMenuChildren.append(advancedMenu)
         
         // File menu
-        let fileMenu = UIMenu(title: "File", options: .displayInline, children: fileMenuChildren)
+        let fileMenu = UIMenu(title: "文件", options: .displayInline, children: fileMenuChildren)
         
         // Visibility menu
-        let visibilityMenu = UIMenu(title: "Visibility...", children: [
-            UIAction(title: "Status", image: statusShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState != .STATE_WELCOME) ? [] : .disabled, handler: { _ in
+        let visibilityMenu = UIMenu(title: "显示…", children: [
+            UIAction(title: "状态信息", image: statusShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState != .STATE_WELCOME) ? [] : .disabled, handler: { _ in
                 self.statusShown = !self.statusShown
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Debug", image: debugShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState != .STATE_WELCOME) ? [] : .disabled, handler: { _ in
+            UIAction(title: "调试信息", image: debugShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState != .STATE_WELCOME) ? [] : .disabled, handler: { _ in
                 self.debugShown = !self.debugShown
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Odom Visible", image: odomShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_MAPPING || self.mState == .STATE_CAMERA || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING) ? [] : .disabled, handler: { _ in
+            UIAction(title: "显示里程计点云", image: odomShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_MAPPING || self.mState == .STATE_CAMERA || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING) ? [] : .disabled, handler: { _ in
                 self.odomShown = !self.odomShown
                 self.rtabmap!.setOdomCloudShown(shown: self.odomShown)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Graph Visibile", image: graphShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_MAPPING || self.mState == .STATE_CAMERA || self.mState == .STATE_IDLE) ? [] : .disabled, handler: { _ in
+            UIAction(title: "显示轨迹图", image: graphShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_MAPPING || self.mState == .STATE_CAMERA || self.mState == .STATE_IDLE) ? [] : .disabled, handler: { _ in
                 self.graphShown = !self.graphShown
                 self.rtabmap!.setGraphVisible(visible: self.graphShown)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Grid Visible", image: gridShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+            UIAction(title: "显示网格", image: gridShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.gridShown = !self.gridShown
                 self.rtabmap!.setGridVisible(visible: self.gridShown)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Optimized Graph", image: optimizedGraphShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_IDLE) ? [] : .disabled, handler: { _ in
+            UIAction(title: "优化后的图", image: optimizedGraphShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_IDLE) ? [] : .disabled, handler: { _ in
                 self.optimizedGraphShown = !self.optimizedGraphShown
                 self.rtabmap!.setGraphOptimization(enabled: self.optimizedGraphShown)
                 self.resetNoTouchTimer(true)
             })
         ])
         
-        let settingsMenu = UIMenu(title: "Settings", options: .displayInline, children: [visibilityMenu,
-            UIAction(title: "Settings", image: UIImage(systemName: "gearshape.2"), attributes: actionSettingsEnabled ? [] : .disabled, state: .off, handler: { _ in
+        let settingsMenu = UIMenu(title: "设置", options: .displayInline, children: [visibilityMenu,
+            UIAction(title: "设置", image: UIImage(systemName: "gearshape.2"), attributes: actionSettingsEnabled ? [] : .disabled, state: .off, handler: { _ in
                 guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
                     return
                 }
@@ -1040,10 +1036,10 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     })
                 }
             }),
-            UIAction(title: "Restore All Default Settings", attributes: actionSettingsEnabled ? [] : .disabled, state: .off, handler: { _ in
+            UIAction(title: "恢复默认设置", attributes: actionSettingsEnabled ? [] : .disabled, state: .off, handler: { _ in
                 
-                let ac = UIAlertController(title: "Reset All Default Settings", message: "Do you want to reset all settings to default?", preferredStyle: .alert)
-                ac.addAction(UIAlertAction(title: "Yes", style: .default, handler: { _ in
+                let ac = UIAlertController(title: "恢复默认设置", message: "要把所有设置恢复成默认值吗？", preferredStyle: .alert)
+                ac.addAction(UIAlertAction(title: "是", style: .default, handler: { _ in
                     let notificationCenter = NotificationCenter.default
                     notificationCenter.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
                     UserDefaults.standard.reset()
@@ -1051,7 +1047,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     self.updateDisplayFromDefaults();
                     notificationCenter.addObserver(self, selector: #selector(self.defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)
                 }))
-                ac.addAction(UIAlertAction(title: "No", style: .cancel, handler: nil))
+                ac.addAction(UIAlertAction(title: "否", style: .cancel, handler: nil))
                 self.present(ac, animated: true)
              })
         ])
@@ -1060,31 +1056,31 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         menuButton.addTarget(self, action: #selector(ViewController.menuOpened(_:)), for: .menuActionTriggered)
         
         // Camera menu
-        let renderingMenu = UIMenu(title: "Rendering", options: .displayInline, children: [
-            UIAction(title: "Texture/Color Blend", image: self.textureColorSeamsShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: self.mState == .STATE_VISUALIZING || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING || self.mState == .STATE_VISUALIZING_WHILE_LOADING ? [] : .disabled, handler: { _ in
+        let renderingMenu = UIMenu(title: "显示效果", options: .displayInline, children: [
+            UIAction(title: "贴图/颜色混合", image: self.textureColorSeamsShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: self.mState == .STATE_VISUALIZING || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING || self.mState == .STATE_VISUALIZING_WHILE_LOADING ? [] : .disabled, handler: { _ in
                 self.textureColorSeamsShown = !self.textureColorSeamsShown
                 self.rtabmap!.setTextureColorSeamsHidden(hidden: !self.textureColorSeamsShown)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Wireframe", image: self.wireframeShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+            UIAction(title: "线框", image: self.wireframeShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.wireframeShown = !self.wireframeShown
                 self.rtabmap!.setWireframe(enabled: self.wireframeShown)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Lighting", image: self.lightingShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: self.mState == .STATE_VISUALIZING || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING || self.mState == .STATE_VISUALIZING_WHILE_LOADING ? [] : .disabled, handler: { _ in
+            UIAction(title: "光照", image: self.lightingShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: self.mState == .STATE_VISUALIZING || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING || self.mState == .STATE_VISUALIZING_WHILE_LOADING ? [] : .disabled, handler: { _ in
                 self.lightingShown = !self.lightingShown
                 self.rtabmap!.setLighting(enabled: self.lightingShown)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Backface", image: self.backfaceShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+            UIAction(title: "背面", image: self.backfaceShown ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.backfaceShown = !self.backfaceShown
                 self.rtabmap!.setBackfaceCulling(enabled: !self.backfaceShown)
                 self.resetNoTouchTimer(true)
             })
         ])
         
-        let cameraMenu = UIMenu(title: "View", options: .displayInline, children: [
-            UIAction(title: "First-P. View", image: cameraMode == 0 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_CAMERA || self.mState == .STATE_VISUALIZING || self.mState == .STATE_MAPPING || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING) ? [] : .disabled, handler: { _ in
+        let cameraMenu = UIMenu(title: "视角", options: .displayInline, children: [
+            UIAction(title: "第一人称", image: cameraMode == 0 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState == .STATE_CAMERA || self.mState == .STATE_VISUALIZING || self.mState == .STATE_MAPPING || self.mState == .STATE_VISUALIZING_CAMERA || self.mState == .STATE_VISUALIZING_AND_MEASURING) ? [] : .disabled, handler: { _ in
                 self.setGLCamera(type: 0)
                 if(self.mState == .STATE_VISUALIZING)
                 {
@@ -1098,31 +1094,31 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     self.resetNoTouchTimer(true)
                 }
             }),
-            UIAction(title: "Third-P. View", image: cameraMode == 1 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState != .STATE_VISUALIZING_AND_MEASURING) ? [] : .disabled, handler: { _ in
+            UIAction(title: "第三人称", image: cameraMode == 1 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: (self.mState != .STATE_VISUALIZING_AND_MEASURING) ? [] : .disabled, handler: { _ in
                 self.setGLCamera(type: 1)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Top View", image: cameraMode == 2 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+            UIAction(title: "俯视", image: cameraMode == 2 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.setGLCamera(type: 2)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Ortho View", image: cameraMode == 3 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
+            UIAction(title: "正交俯视", image: cameraMode == 3 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), handler: { _ in
                 self.setGLCamera(type: 3)
                 self.resetNoTouchTimer(true)
             })
         ])
         
         let showCloudMeshActions = mState != .STATE_VISUALIZING && mState != .STATE_VISUALIZING_CAMERA && mState != .STATE_VISUALIZING_AND_MEASURING && mState != .STATE_PROCESSING && mState != .STATE_VISUALIZING_WHILE_LOADING
-        let cloudMeshMenu = UIMenu(title: "CloudMesh", options: .displayInline, children: [
-            UIAction(title: "Point Cloud", image: viewMode == 0 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: showCloudMeshActions ? [] : .disabled, handler: { _ in
+        let cloudMeshMenu = UIMenu(title: "点云/网格", options: .displayInline, children: [
+            UIAction(title: "点云", image: viewMode == 0 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: showCloudMeshActions ? [] : .disabled, handler: { _ in
                 self.setMeshRendering(viewMode: 0)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Mesh", image: viewMode == 1 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: showCloudMeshActions ? [] : .disabled, handler: { _ in
+            UIAction(title: "网格", image: viewMode == 1 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: showCloudMeshActions ? [] : .disabled, handler: { _ in
                 self.setMeshRendering(viewMode: 1)
                 self.resetNoTouchTimer(true)
             }),
-            UIAction(title: "Texture Mesh", image: viewMode == 2 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: showCloudMeshActions ? [] : .disabled, handler: { _ in
+            UIAction(title: "贴图网格", image: viewMode == 2 ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle"), attributes: showCloudMeshActions ? [] : .disabled, handler: { _ in
                 self.setMeshRendering(viewMode: 2)
                 self.resetNoTouchTimer(true)
             })
@@ -1143,14 +1139,14 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     
     func exportMesh(isOBJ: Bool)
     {
-        let ac = UIAlertController(title: "Maximum Polygons", message: "\n\n\n\n\n\n\n\n\n\n", preferredStyle: .alert)
+        let ac = UIAlertController(title: "最大面数", message: "\n\n\n\n\n\n\n\n\n\n", preferredStyle: .alert)
         ac.view.addSubview(maxPolygonsPickerView)
         maxPolygonsPickerView.selectRow(2, inComponent: 0, animated: false)
-        ac.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
+        ac.addAction(UIAlertAction(title: "好", style: .default, handler: { _ in
             let pickerValue = self.maxPolygonsPickerData[self.maxPolygonsPickerView.selectedRow(inComponent: 0)]
             self.export(isOBJ: isOBJ, meshing: true, regenerateCloud: false, optimized: true, optimizedMaxPolygons: pickerValue*100000, previousState: self.mState);
         }))
-        ac.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        ac.addAction(UIAlertAction(title: "取消", style: .cancel, handler: nil))
         present(ac, animated: true)
     }
     
@@ -1165,7 +1161,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         if(row == 0)
         {
-            return "No Limit"
+            return "不限制"
         }
         return "\(maxPolygonsPickerData[row])00 000"
     }
@@ -1190,19 +1186,19 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         case .normal:
             accept = true
         case .notAvailable:
-            status = "Tracking not available"
+            status = "无法追踪位置"
         case .limited(.excessiveMotion):
             accept = true
-            status = "Please Slow Your Movement"
+            status = "移动太快了，请慢一点"
         case .limited(.insufficientFeatures):
             accept = true
-            status = "Avoid Featureless Surfaces"
+            status = "避开没有纹理的表面（比如白墙）"
         case .limited(.initializing):
-            status = "Initializing"
+            status = "正在初始化，请稍微移动手机"
         case .limited(.relocalizing):
-            status = "Relocalizing"
+            status = "正在重新定位"
         default:
-            status = "Unknown tracking state"
+            status = "追踪状态未知"
         }
         
         mLastLightEstimate = frame.lightEstimate?.ambientIntensity
@@ -1212,7 +1208,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         }
         
         if !status.isEmpty && mLastLightEstimate != nil && mLastLightEstimate! < 100 && accept {
-            status = "Camera Is Occluded Or Lighting Is Too Dark"
+            status = "镜头被挡住了，或者光线太暗"
         }
 
         if let rotation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation
@@ -1240,8 +1236,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         let errorMessage = messages.compactMap({ $0 }).joined(separator: "\n")
         DispatchQueue.main.async {
             // Present an alert informing about the error that has occurred.
-            let alertController = UIAlertController(title: "The AR session failed.", message: errorMessage, preferredStyle: .alert)
-            let restartAction = UIAlertAction(title: "Restart Session", style: .default) { _ in
+            let alertController = UIAlertController(title: "AR 会话出错", message: errorMessage, preferredStyle: .alert)
+            let restartAction = UIAlertAction(title: "重新开始", style: .default) { _ in
                 alertController.dismiss(animated: true, completion: nil)
                 if let configuration = self.session.configuration {
                     self.session.run(configuration, options: [.resetSceneReconstruction, .resetTracking, .removeExistingAnchors])
@@ -1272,9 +1268,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         }
         if(status == .denied)
         {
-            let alertController = UIAlertController(title: "GPS Disabled", message: "GPS option is enabled (Settings->Mapping...) but localization is denied for this App. To enable location for this App, go in Settings->Privacy->Location.", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "GPS 未授权", message: "已开启 GPS 选项（设置 → 扫描），但这个 App 没有定位权限。请到系统设置 → 隐私 → 定位服务里打开。", preferredStyle: .alert)
 
-            let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
+            let settingsAction = UIAlertAction(title: "设置", style: .default) { (action) in
                 self.locationManager = nil
                 self.mLastKnownLocation = nil
                 guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
@@ -1289,7 +1285,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             }
             alertController.addAction(settingsAction)
             
-            let okAction = UIAlertAction(title: "Turn Off GPS", style: .default) { (action) in
+            let okAction = UIAlertAction(title: "关闭 GPS", style: .default) { (action) in
                 UserDefaults.standard.setValue(false, forKey: "SaveGPS")
                 self.updateDisplayFromDefaults()
             }
@@ -1301,9 +1297,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         {
             if locationManager != nil {
                 if(locationManager!.accuracyAuthorization == .reducedAccuracy) {
-                    let alertController = UIAlertController(title: "GPS Reduced Accuracy", message: "Your location settings for this App is set to reduced accuracy. We recommend to use high accuracy.", preferredStyle: .alert)
+                    let alertController = UIAlertController(title: "GPS 精度降低", message: "这个 App 的定位被设置成了「大致位置」，建议在系统设置里打开「精确位置」。", preferredStyle: .alert)
 
-                    let settingsAction = UIAlertAction(title: "Settings", style: .default) { (action) in
+                    let settingsAction = UIAlertAction(title: "设置", style: .default) { (action) in
                         guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
                             return
                         }
@@ -1316,7 +1312,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     }
                     alertController.addAction(settingsAction)
                     
-                    let okAction = UIAlertAction(title: "Ignore", style: .default) { (action) in
+                    let okAction = UIAlertAction(title: "忽略", style: .default) { (action) in
                     }
                     alertController.addAction(okAction)
                     
@@ -1624,9 +1620,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         }
         
         if(!mDataRecording) {
-            let alertController = UIAlertController(title: "Append Mode", message: "The camera preview will not be aligned to map on start, move to a previously scanned area, then push Record. When a loop closure is detected, new scans will be appended to map.", preferredStyle: .alert)
+            let alertController = UIAlertController(title: "追加扫描", message: "开始时相机画面不会和已有模型对齐。请先走到之前扫过的地方，再点录制。识别出之前扫过的位置后，新扫描的内容会接到原来的模型上。", preferredStyle: .alert)
             
-            let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+            let okAction = UIAlertAction(title: "好", style: .default) { (action) in
             }
             alertController.addAction(okAction)
             
@@ -1661,9 +1657,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
            tmpDatabase.fileSize > 1024*1024) // > 1MB
         {
             dismiss(animated: true, completion: {
-                let msg = "The previous session (\(tmpDatabase.fileSizeString)) was not correctly saved, do you want to recover it?"
-                let alert = UIAlertController(title: "Recovery", message: msg, preferredStyle: .alert)
-                let alertActionNo = UIAlertAction(title: "Ignore", style: .destructive) {
+                let msg = "上一次扫描（\(tmpDatabase.fileSizeString)）没有正常保存，要恢复吗？"
+                let alert = UIAlertController(title: "恢复数据", message: msg, preferredStyle: .alert)
+                let alertActionNo = UIAlertAction(title: "忽略", style: .destructive) {
                     (UIAlertAction) -> Void in
                     do {
                         try FileManager.default.removeItem(at: tmpDatabase)
@@ -1674,12 +1670,12 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     self.newScan(dataRecordingMode: dataRecordingMode)
                 }
                 alert.addAction(alertActionNo)
-                let alertActionCancel = UIAlertAction(title: "Cancel", style: .cancel) {
+                let alertActionCancel = UIAlertAction(title: "取消", style: .cancel) {
                     (UIAlertAction) -> Void in
                     // do nothing
                 }
                 alert.addAction(alertActionCancel)
-                let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                let alertActionYes = UIAlertAction(title: "是", style: .default) {
                     (UIAlertAction2) -> Void in
 
                     let fileName = Date().getFormattedDate(format: "yyMMdd-HHmmss") + ".db"
@@ -1687,8 +1683,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     
                     var indicator: UIActivityIndicatorView?
                     
-                    let alertView = UIAlertController(title: "Recovering", message: "Please wait while recovering data...", preferredStyle: .alert)
-                    let alertViewActionCancel = UIAlertAction(title: "Cancel", style: .cancel) {
+                    let alertView = UIAlertController(title: "正在恢复", message: "正在恢复数据，请稍候…", preferredStyle: .alert)
+                    let alertViewActionCancel = UIAlertAction(title: "取消", style: .cancel) {
                         (UIAlertAction) -> Void in
                         self.dismiss(animated: true, completion: {
                             self.progressView = nil
@@ -1729,8 +1725,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                                 self.dismiss(animated: self.openedDatabasePath == nil, completion: {
                                     if(success)
                                     {
-                                        let alertSaved = UIAlertController(title: "Database saved!", message: String(format: "Database \"%@\" successfully recovered!", fileName), preferredStyle: .alert)
-                                        let yes = UIAlertAction(title: "OK", style: .default) {
+                                        let alertSaved = UIAlertController(title: "已保存！", message: String(format: "「%@」已恢复！", fileName), preferredStyle: .alert)
+                                        let yes = UIAlertAction(title: "好", style: .default) {
                                             (UIAlertAction) -> Void in
                                             self.openDatabase(fileUrl: URL(fileURLWithPath: outputDbPath))
                                         }
@@ -1740,13 +1736,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                                     else
                                     {
                                         self.updateState(state: previousState);
-                                        self.showToast(message: "Recovery failed!", seconds: 4)
+                                        self.showToast(message: "恢复失败！", seconds: 4)
                                     }
                                 })
                             }
                             else
                             {
-                                self.showToast(message: "Recovery canceled", seconds: 2)
+                                self.showToast(message: "已取消恢复", seconds: 2)
                                 self.updateState(state: previousState);
                             }
                         })
@@ -1767,9 +1763,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             if(!(self.mState == State.STATE_CAMERA || self.mState == State.STATE_MAPPING))
             {
                 if(mDataRecording) {
-                    let alertController = UIAlertController(title: "Data Recording Mode", message: "This mode should be only used if you want to record raw ARKit data as long as possible without any feedback: loop closure detection and map rendering are disabled. The database size in Debug display shows how much data has been recorded so far.", preferredStyle: .alert)
+                    let alertController = UIAlertController(title: "数据录制模式", message: "这个模式只用于尽可能长时间地录制原始 ARKit 数据，扫描时不显示模型，也不做回环检测。调试信息里的数据库大小就是已经录下的数据量。", preferredStyle: .alert)
                     
-                    let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+                    let okAction = UIAlertAction(title: "好", style: .default) { (action) in
                     }
                     alertController.addAction(okAction)
                     
@@ -1786,22 +1782,22 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     func save()
     {
         //Step : 1
-        let alert = UIAlertController(title: "Save Scan", message: "RTAB-Map Database Name (*.db):", preferredStyle: .alert )
+        let alert = UIAlertController(title: "保存扫描", message: "扫描文件名（*.db）：", preferredStyle: .alert )
         //Step : 2
-        let save = UIAlertAction(title: "Save", style: .default) { (alertAction) in
+        let save = UIAlertAction(title: "保存", style: .default) { (alertAction) in
             let textField = alert.textFields![0] as UITextField
             if textField.text != "" {
                 //Read TextFields text data
                 let fileName = textField.text!+".db"
                 let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
                 if FileManager.default.fileExists(atPath: filePath) {
-                    let alert = UIAlertController(title: "File Already Exists", message: "Do you want to overwrite the existing file?", preferredStyle: .alert)
-                    let yes = UIAlertAction(title: "Yes", style: .default) {
+                    let alert = UIAlertController(title: "文件已存在", message: "要覆盖已有的文件吗？", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "是", style: .default) {
                         (UIAlertAction) -> Void in
                         self.saveDatabase(fileName: fileName);
                     }
                     alert.addAction(yes)
-                    let no = UIAlertAction(title: "No", style: .cancel) {
+                    let no = UIAlertAction(title: "否", style: .cancel) {
                         (UIAlertAction) -> Void in
                         if(self.mDataRecording) {
                             self.save() // We cannot skip saving after data recording
@@ -1843,7 +1839,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         alert.addAction(save)
         //Cancel action
         if(!mDataRecording) {
-            alert.addAction(UIAlertAction(title: "Cancel", style: .default) { (alertAction) in })
+            alert.addAction(UIAlertAction(title: "取消", style: .default) { (alertAction) in })
         }
 
         self.present(alert, animated: true) {
@@ -1875,8 +1871,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             
             self.openedDatabasePath = URL(fileURLWithPath: filePath)
             
-            let alert = UIAlertController(title: "Database saved!", message: String(format: "Database \"%@\" successfully saved!", fileName), preferredStyle: .alert)
-            let yes = UIAlertAction(title: "OK", style: .default) {
+            let alert = UIAlertController(title: "已保存！", message: String(format: "「%@」已保存！", fileName), preferredStyle: .alert)
+            let yes = UIAlertAction(title: "好", style: .default) {
                 (UIAlertAction) -> Void in
             }
             alert.addAction(yes)
@@ -1932,8 +1928,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         
         var indicator: UIActivityIndicatorView?
         
-        let alertView = UIAlertController(title: "Assembling", message: "Please wait while assembling data...", preferredStyle: .alert)
-        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+        let alertView = UIAlertController(title: "正在生成模型", message: "正在生成模型，请稍候…", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { _ in
             self.dismiss(animated: true, completion: {
                 self.progressView = nil
                 
@@ -1996,7 +1992,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                         {
                             if(!meshing && cloudVoxelSize>0.0)
                             {
-                                self.showToast(message: "Cloud assembled and voxelized at \(cloudVoxelSize) m.", seconds: 2)
+                                self.showToast(message: "点云已生成，体素大小 \(cloudVoxelSize) 米。", seconds: 2)
                             }
                             
                             if(!meshing)
@@ -2032,13 +2028,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                         else
                         {
                             self.updateState(state: previousState);
-                            self.showToast(message: "Exporting map failed!", seconds: 4)
+                            self.showToast(message: "导出失败！", seconds: 4)
                         }
                     })
                 }
                 else
                 {
-                    self.showToast(message: "Export canceled", seconds: 2)
+                    self.showToast(message: "已取消导出", seconds: 2)
                     self.updateState(state: previousState);
                 }
             })
@@ -2053,8 +2049,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             rtabmap!.postExportation(visualize: false)
         }
         
-        let alertView = UIAlertController(title: "Post-Processing", message: "Please wait while optimizing...", preferredStyle: .alert)
-        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+        let alertView = UIAlertController(title: "后期处理", message: "正在优化，请稍候…", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { _ in
             self.dismiss(animated: true)
             self.progressView = nil
             self.rtabmap!.cancelProcessing()
@@ -2101,13 +2097,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                         }
                         else if(loopDetected < 0)
                         {
-                            self.showToast(message: "Optimization failed!", seconds: 4.0)
+                            self.showToast(message: "优化失败！", seconds: 4.0)
                         }
                     })
                 }
                 else
                 {
-                    self.showToast(message: "Optimization canceled", seconds: 4.0)
+                    self.showToast(message: "已取消优化", seconds: 4.0)
                 }
                 self.updateState(state: .STATE_IDLE);
             })
@@ -2141,27 +2137,27 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             else
             {
                 dismiss(animated: true, completion: {
-                    var msg = "Do you want to do standard graph optimization and make a nice assembled mesh now? This can be also done later using \"Optimize\" and \"Assemble\" menus."
+                    var msg = "要现在优化并生成完整的模型吗？之后也可以在菜单的「优化」和「生成模型」里做。"
                     let depthUsed = self.depthSupported && UserDefaults.standard.bool(forKey: "LidarMode")
                     if !depthUsed
                     {
-                        msg = "Do you want to do standard graph optimization now? This can be also done later using \"Optimize\" menu."
+                        msg = "要现在优化吗？之后也可以在菜单的「优化」里做。"
                     }
-                    let alert = UIAlertController(title: "Mapping Stopped! Optimize Now?", message: msg, preferredStyle: .alert)
+                    let alert = UIAlertController(title: "扫描已停止，现在优化吗？", message: msg, preferredStyle: .alert)
                     if depthUsed {
-                        let alertActionOnlyGraph = UIAlertAction(title: "Only Optimize", style: .default)
+                        let alertActionOnlyGraph = UIAlertAction(title: "只优化", style: .default)
                         {
                             (UIAlertAction) -> Void in
                             self.optimization(withStandardMeshExport: false, approach: -1)
                         }
                         alert.addAction(alertActionOnlyGraph)
                     }
-                    let alertActionNo = UIAlertAction(title: "Save First", style: .cancel) {
+                    let alertActionNo = UIAlertAction(title: "先保存", style: .cancel) {
                         (UIAlertAction) -> Void in
                         self.save()
                     }
                     alert.addAction(alertActionNo)
-                    let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                    let alertActionYes = UIAlertAction(title: "是", style: .default) {
                         (UIAlertAction) -> Void in
                         self.optimization(withStandardMeshExport: depthUsed, approach: -1)
                     }
@@ -2207,7 +2203,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         openedDatabasePath = fileUrl;
         let fileName: String = self.openedDatabasePath!.lastPathComponent
         
-        var progressDialog = UIAlertController(title: "Loading", message: String(format: "Loading \"%@\". Please wait while point clouds and/or meshes are created...", fileName), preferredStyle: .alert)
+        var progressDialog = UIAlertController(title: "正在加载", message: String(format: "正在加载「%@」，请稍候，正在生成点云和网格…", fileName), preferredStyle: .alert)
         
         //  Show it to your users
         self.present(progressDialog, animated: true)
@@ -2221,11 +2217,11 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             // main thread
             if(status == -1) {
                 self.dismiss(animated: true)
-                self.showToast(message: "The map is loaded but optimization of the map's graph has failed, so the map cannot be shown. Change the Graph Optimizer approach used or enable/disable if the graph is optimized from graph end in \"Settings -> Mapping...\" and try opening again.", seconds: 4)
+                self.showToast(message: "模型已加载，但图优化失败，无法显示。请在「设置 → 扫描」里换一种图优化方法，或者切换「从图末端优化」，然后再打开一次。", seconds: 4)
             }
             else if(status == -2) {
                 self.dismiss(animated: true)
-                self.showToast(message: "Failed to open database: Out of memory! Try again after lowering Point Cloud Density in Settings.", seconds: 4)
+                self.showToast(message: "打开失败：内存不足！请在设置里降低点云密度后再试。", seconds: 4)
             }
             else {
                 if(status >= 1 && status<=3) {
@@ -2237,7 +2233,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                     self.setGLCamera(type: 2);
                     self.updateState(state: .STATE_IDLE);
                     self.dismiss(animated: true)
-                    self.showToast(message: "Database loaded!", seconds: 2)
+                    self.showToast(message: "加载完成！", seconds: 2)
                 }
             }
             
@@ -2252,17 +2248,17 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     func rename(fileURL: URL)
     {
         //Step : 1
-        let alert = UIAlertController(title: "Rename Scan", message: "RTAB-Map Database Name (*.db):", preferredStyle: .alert )
+        let alert = UIAlertController(title: "重命名扫描", message: "扫描文件名（*.db）：", preferredStyle: .alert )
         //Step : 2
-        let rename = UIAlertAction(title: "Rename", style: .default) { (alertAction) in
+        let rename = UIAlertAction(title: "重命名", style: .default) { (alertAction) in
             let textField = alert.textFields![0] as UITextField
             if textField.text != "" {
                 //Read TextFields text data
                 let fileName = textField.text!+".db"
                 let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
                 if FileManager.default.fileExists(atPath: filePath) {
-                    let alert = UIAlertController(title: "File Already Exists", message: "Do you want to overwrite the existing file?", preferredStyle: .alert)
-                    let yes = UIAlertAction(title: "Yes", style: .default) {
+                    let alert = UIAlertController(title: "文件已存在", message: "要覆盖已有的文件吗？", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "是", style: .default) {
                         (UIAlertAction) -> Void in
                         
                         do {
@@ -2275,7 +2271,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                         self.openLibrary()
                     }
                     alert.addAction(yes)
-                    let no = UIAlertAction(title: "No", style: .cancel) {
+                    let no = UIAlertAction(title: "否", style: .cancel) {
                         (UIAlertAction) -> Void in
                     }
                     alert.addAction(no)
@@ -2308,7 +2304,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         //Step : 4
         alert.addAction(rename)
         //Cancel action
-        alert.addAction(UIAlertAction(title: "Cancel", style: .default) { (alertAction) in })
+        alert.addAction(UIAlertAction(title: "取消", style: .default) { (alertAction) in })
 
         self.present(alert, animated: true) {
             alert.textFields?.first?.selectAll(nil)
@@ -2318,9 +2314,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     func exportOBJPLY()
     {
         //Step : 1
-        let alert = UIAlertController(title: "Export Scan", message: "Model Name:", preferredStyle: .alert )
+        let alert = UIAlertController(title: "导出模型", message: "模型文件名：", preferredStyle: .alert )
         //Step : 2
-        let save = UIAlertAction(title: "Ok", style: .default) { (alertAction) in
+        let save = UIAlertAction(title: "好", style: .default) { (alertAction) in
             let textField = alert.textFields![0] as UITextField
             if textField.text != "" {
                 self.dismiss(animated: true)
@@ -2328,13 +2324,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 let fileName = textField.text! + (self.exportOBJPLYButton.title(for: .normal)!.contains("LAZ") ? ".laz" : ".zip")
                 let filePath = self.getDocumentDirectory().appendingPathComponent(fileName).path
                 if FileManager.default.fileExists(atPath: filePath) {
-                    let alert = UIAlertController(title: "File Already Exists", message: "\(fileName) already exists, do you want to overwrite it?", preferredStyle: .alert)
-                    let yes = UIAlertAction(title: "Yes", style: .default) {
+                    let alert = UIAlertController(title: "文件已存在", message: "\(fileName) 已存在，要覆盖吗？", preferredStyle: .alert)
+                    let yes = UIAlertAction(title: "是", style: .default) {
                         (UIAlertAction) -> Void in
                         self.writeExportedFiles(fileName: textField.text!);
                     }
                     alert.addAction(yes)
-                    let no = UIAlertAction(title: "No", style: .cancel) {
+                    let no = UIAlertAction(title: "否", style: .cancel) {
                         (UIAlertAction) -> Void in
                     }
                     alert.addAction(no)
@@ -2366,7 +2362,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         //Step : 4
         alert.addAction(save)
         //Cancel action
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { (alertAction) in })
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel) { (alertAction) in })
 
         self.present(alert, animated: true) {
             alert.textFields?.first?.selectAll(nil)
@@ -2377,8 +2373,8 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
     {
         let isLAZ = self.visualizationType==0 && self.exportOBJPLYButton.title(for: .normal)!.contains("LAZ")
         
-        let alertView = UIAlertController(title: "Exporting", message: "Please wait while exporting data to \(fileName+(isLAZ ? ".laz" : ".zip"))...", preferredStyle: .alert)
-        alertView.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+        let alertView = UIAlertController(title: "正在导出", message: "正在导出到 \(fileName+(isLAZ ? ".laz" : ".zip"))，请稍候…", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { _ in
             self.dismiss(animated: true)
             self.progressView = nil
             self.rtabmap!.cancelProcessing()
@@ -2463,13 +2459,13 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 }
                 if(success)
                 {
-                    let alertShare = UIAlertController(title: "Mesh/Cloud Saved!", message: "\(fileName+(isLAZ ? ".laz" : ".zip")) (\(zipFileUrl.fileSizeString) successfully exported in Documents of RTAB-Map! Share it?", preferredStyle: .alert)
-                    let alertActionYes = UIAlertAction(title: "Yes", style: .default) {
+                    let alertShare = UIAlertController(title: "模型已导出！", message: "\(fileName+(isLAZ ? ".laz" : ".zip"))（\(zipFileUrl.fileSizeString)）已导出到 App 的文稿目录，要分享吗？", preferredStyle: .alert)
+                    let alertActionYes = UIAlertAction(title: "是", style: .default) {
                         (UIAlertAction) -> Void in
                         self.shareFile(zipFileUrl)
                     }
                     alertShare.addAction(alertActionYes)
-                    let alertActionNo = UIAlertAction(title: "No", style: .cancel) {
+                    let alertActionNo = UIAlertAction(title: "否", style: .cancel) {
                         (UIAlertAction) -> Void in
                        
                     }
@@ -2479,7 +2475,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                 }
                 else
                 {
-                    self.showToast(message: "Exporting mesh/cloud canceled!", seconds: 2)
+                    self.showToast(message: "已取消导出！", seconds: 2)
                 }
                 self.updateState(state: previousState);
             })
@@ -2521,7 +2517,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
             return
         }
         
-        let alertController = LibraryAlertController(title: "Library", message: nil, preferredStyle: .alert)
+        let alertController = LibraryAlertController(title: "扫描记录", message: nil, preferredStyle: .alert)
         
         let customVC = UIViewController()
         let customView = VerticalScrollerView()
@@ -2558,11 +2554,11 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         
         
 
-        let selectAction = UIAlertAction(title: "Select", style: .default) { (action) in
+        let selectAction = UIAlertAction(title: "选择", style: .default) { (action) in
             self.openDatabase(fileUrl: self.databases[self.currentDatabaseIndex])
         }
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: nil)
         alertController.addAction(selectAction)
         alertController.addAction(cancelAction)
         self.present(alertController, animated: true, completion: nil)
@@ -2667,11 +2663,11 @@ extension ViewController: GLKViewControllerDelegate {
             }
             if(value == -1)
             {
-                self.showToast(message: "Out of Memory!", seconds: 2)
+                self.showToast(message: "内存不足！", seconds: 2)
             }
             else if(value == -2)
             {
-                self.showToast(message: "Rendering Error!", seconds: 2)
+                self.showToast(message: "显示出错！", seconds: 2)
             }
         }
     }
@@ -2753,8 +2749,8 @@ extension ViewController: DatabaseViewDelegate {
         
         if(openedDatabasePath?.lastPathComponent == databaseURL.lastPathComponent)
         {
-            let alertController = UIAlertController(title: "Rename Database", message: "Database \(databaseURL.lastPathComponent) is already opened, cannot rename it.", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+            let alertController = UIAlertController(title: "重命名扫描", message: "\(databaseURL.lastPathComponent) 正在使用，不能重命名。", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "好", style: .default) { (action) in
             }
             alertController.addAction(okAction)
             present(alertController, animated: true)
@@ -2769,8 +2765,8 @@ extension ViewController: DatabaseViewDelegate {
         
         if(openedDatabasePath?.lastPathComponent == databaseURL.lastPathComponent)
         {
-            let alertController = UIAlertController(title: "Delete Database", message: "Database \(databaseURL.lastPathComponent) is already opened, cannot delete it.", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default) { (action) in
+            let alertController = UIAlertController(title: "删除扫描", message: "\(databaseURL.lastPathComponent) 正在使用，不能删除。", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "好", style: .default) { (action) in
             }
             alertController.addAction(okAction)
             present(alertController, animated: true)

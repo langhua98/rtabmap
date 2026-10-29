@@ -6,9 +6,9 @@
 	<array>
 		<dict>
 			<key>FooterText</key>
-			<string>Decrease density to reduce rendering time and memory. Points over the maximum depth or under minimum depth are not rendered. In all cases, the raw data is still saved in the db file, meaning that the the point cloud can be regenerated differently by changing these settings and by re-opening the scan in the Library.</string>
+			<string>降低密度可以减少显示耗时和内存。超出最大深度或小于最小深度的点不显示。原始数据始终完整保存在 db 文件里，改了这些设置后，从扫描记录重新打开就能按新设置生成点云。</string>
 			<key>Title</key>
-			<string>Rendering</string>
+			<string>显示效果</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
@@ -18,13 +18,13 @@
 			<key>Key</key>
 			<string>PointCloudDensity</string>
 			<key>Title</key>
-			<string>Point Cloud Density</string>
+			<string>点云密度</string>
 			<key>Titles</key>
 			<array>
-				<string>Maximum</string>
-				<string>High</string>
-				<string>Low</string>
-				<string>Very Low</string>
+				<string>最大</string>
+				<string>高</string>
+				<string>低</string>
+				<string>很低</string>
 			</array>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
@@ -42,10 +42,10 @@
 			<key>Key</key>
 			<string>MaxDepth</string>
 			<key>Title</key>
-			<string>Max Depth</string>
+			<string>最大深度</string>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
+				<string>不限制</string>
 				<string>5 m</string>
 				<string>4.5 m</string>
 				<string>4 m</string>
@@ -61,15 +61,15 @@
 			<key>Values</key>
 			<array>
 				<real>0.0</real>
-				<real>5</real>
+				<real>5.0</real>
 				<real>4.5</real>
-				<real>4</real>
+				<real>4.0</real>
 				<real>3.5</real>
-				<real>3</real>
+				<real>3.0</real>
 				<real>2.5</real>
-				<real>2</real>
+				<real>2.0</real>
 				<real>1.5</real>
-				<real>1</real>
+				<real>1.0</real>
 			</array>
 		</dict>
 		<dict>
@@ -78,7 +78,7 @@
 			<key>Key</key>
 			<string>MinDepth</string>
 			<key>Title</key>
-			<string>Min Depth</string>
+			<string>最小深度</string>
 			<key>Titles</key>
 			<array>
 				<string>0 m</string>
@@ -96,19 +96,19 @@
 			<key>Values</key>
 			<array>
 				<real>0.0</real>
-				<real>0.29999999999999999</real>
+				<real>0.3</real>
 				<real>0.5</real>
 				<real>0.75</real>
-				<real>1</real>
+				<real>1.0</real>
 				<real>1.5</real>
-				<real>2</real>
+				<real>2.0</real>
 				<real>2.5</real>
-				<real>3</real>
+				<real>3.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>FooterText</key>
-			<string>Increase minimum polygon angle to force scanning perpendicular to surfaces. Set a decimation factor to reduce the number of polygons. The higher the factor, the less polygons will remain. Note that the decimation factor is done after decreasing point cloud density. Decimation factor and texture resolution don't affect post-processing.</string>
+			<string>调大最小角度，可以要求正对表面扫描。简化系数用来减少面数，系数越大，剩下的面越少；简化在降低点云密度之后进行。简化系数和贴图分辨率不影响后期处理。</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
@@ -118,7 +118,7 @@
 			<key>Key</key>
 			<string>MeshAngleTolerance</string>
 			<key>Title</key>
-			<string>Mesh Angle Tolerance (deg)</string>
+			<string>网格角度容差（度）</string>
 			<key>Titles</key>
 			<array>
 				<string>60</string>
@@ -152,7 +152,7 @@
 			<key>Key</key>
 			<string>MeshTriangleSize</string>
 			<key>Title</key>
-			<string>Mesh Triangle Size</string>
+			<string>网格三角形大小</string>
 			<key>Titles</key>
 			<array>
 				<string>6 pix</string>
@@ -178,7 +178,7 @@
 			<key>Key</key>
 			<string>MeshDecimationFactor</string>
 			<key>Title</key>
-			<string>Mesh Decimation Factor</string>
+			<string>网格简化系数</string>
 			<key>Titles</key>
 			<array>
 				<string>99%</string>
@@ -192,23 +192,23 @@
 				<string>30%</string>
 				<string>20%</string>
 				<string>10%</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Values</key>
 			<array>
-				<real>0.98999999999999999</real>
-				<real>0.94999999999999996</real>
-				<real>0.90000000000000002</real>
-				<real>0.80000000000000004</real>
-				<real>0.69999999999999996</real>
-				<real>0.59999999999999998</real>
+				<real>0.99</real>
+				<real>0.95</real>
+				<real>0.9</real>
+				<real>0.8</real>
+				<real>0.7</real>
+				<real>0.6</real>
 				<real>0.5</real>
-				<real>0.40000000000000002</real>
-				<real>0.29999999999999999</real>
-				<real>0.20000000000000001</real>
-				<real>0.10000000000000001</real>
+				<real>0.4</real>
+				<real>0.3</real>
+				<real>0.2</real>
+				<real>0.1</real>
 				<real>0.0</real>
 			</array>
 		</dict>
@@ -218,13 +218,13 @@
 			<key>Key</key>
 			<string>TextureResolution</string>
 			<key>Title</key>
-			<string>Texture Resolution</string>
+			<string>贴图分辨率</string>
 			<key>Titles</key>
 			<array>
-				<string>Maximum</string>
-				<string>High</string>
-				<string>Low</string>
-				<string>Very Low</string>
+				<string>最大</string>
+				<string>高</string>
+				<string>低</string>
+				<string>很低</string>
 			</array>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
@@ -238,43 +238,43 @@
 		</dict>
 		<dict>
 			<key>FooterText</key>
-			<string>Enable Blending to get smoother colors on overlapping surfaces. When Nodes Filetring is enabled, only the newest point clouds of loop closures are rendered.</string>
+			<string>打开颜色混合，重叠的表面颜色会更平滑。打开节点过滤后，回环处只显示最新的点云。</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
-			<real>0.20000000000000001</real>
+			<real>0.2</real>
 			<key>Key</key>
 			<string>BackgroundColor</string>
 			<key>Title</key>
-			<string>Background Color</string>
+			<string>背景颜色</string>
 			<key>Titles</key>
 			<array>
 				<string>0.9</string>
-				<string>Light Gray</string>
+				<string>浅灰</string>
 				<string>0.7</string>
 				<string>0.6</string>
-				<string>Gray</string>
+				<string>灰色</string>
 				<string>0.4</string>
 				<string>0.3</string>
-				<string>Dark Gray</string>
+				<string>深灰</string>
 				<string>0.1</string>
-				<string>Black</string>
+				<string>黑色</string>
 			</array>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Values</key>
 			<array>
-				<real>0.90000000000000002</real>
-				<real>0.80000000000000004</real>
-				<real>0.69999999999999996</real>
-				<real>0.59999999999999998</real>
+				<real>0.9</real>
+				<real>0.8</real>
+				<real>0.7</real>
+				<real>0.6</real>
 				<real>0.5</real>
-				<real>0.40000000000000002</real>
-				<real>0.29999999999999999</real>
-				<real>0.20000000000000001</real>
-				<real>0.10000000000000001</real>
+				<real>0.4</real>
+				<real>0.3</real>
+				<real>0.2</real>
+				<real>0.1</real>
 				<real>0.0</real>
 			</array>
 		</dict>
@@ -284,7 +284,7 @@
 			<key>Key</key>
 			<string>PointSize</string>
 			<key>Title</key>
-			<string>Point Size</string>
+			<string>点大小</string>
 			<key>Titles</key>
 			<array>
 				<string>50</string>
@@ -314,7 +314,7 @@
 			<key>Key</key>
 			<string>Blending</string>
 			<key>Title</key>
-			<string>Blending</string>
+			<string>颜色混合</string>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 		</dict>
@@ -324,13 +324,13 @@
 			<key>Key</key>
 			<string>NodesFiltering</string>
 			<key>Title</key>
-			<string>Nodes Filtering</string>
+			<string>节点过滤</string>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 		</dict>
 		<dict>
 			<key>Title</key>
-			<string>General</string>
+			<string>通用</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
@@ -338,7 +338,7 @@
 			<key>File</key>
 			<string>Mapping</string>
 			<key>Title</key>
-			<string>Mapping...</string>
+			<string>扫描…</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
@@ -346,15 +346,15 @@
 			<key>File</key>
 			<string>Assembling</string>
 			<key>Title</key>
-			<string>Assembling...</string>
+			<string>生成模型…</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>
 		<dict>
 			<key>FooterText</key>
-			<string>Color CorrectionRadius is used to find pixel correspondences for Adjust Colors optimization. Noise Filtering Ratio is used to remove polygon clusters smaller than this ratio of the largest cluster during Noise Filtering optimization.</string>
+			<string>颜色校正半径用于「颜色校正」时寻找对应像素。噪点过滤比例用于「去除噪点」：小于最大块这个比例的碎块会被删掉。</string>
 			<key>Title</key>
-			<string>Optimization</string>
+			<string>优化</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
@@ -364,7 +364,7 @@
 			<key>Key</key>
 			<string>ColorCorrectionRadius</string>
 			<key>Title</key>
-			<string>Color Correction Radius</string>
+			<string>颜色校正半径</string>
 			<key>Titles</key>
 			<array>
 				<string>30 cm</string>
@@ -380,26 +380,26 @@
 			<string>PSMultiValueSpecifier</string>
 			<key>Values</key>
 			<array>
-				<real>0.29999999999999999</real>
-				<real>0.20000000000000001</real>
-				<real>0.10000000000000001</real>
-				<real>0.050000000000000003</real>
-				<real>0.025000000000000001</real>
+				<real>0.3</real>
+				<real>0.2</real>
+				<real>0.1</real>
+				<real>0.05</real>
+				<real>0.025</real>
 				<real>0.02</real>
-				<real>0.014999999999999999</real>
+				<real>0.015</real>
 				<real>0.01</real>
 			</array>
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
-			<real>0.050000000000000003</real>
+			<real>0.05</real>
 			<key>Key</key>
 			<string>NoiseFilteringRatio</string>
 			<key>Title</key>
-			<string>Noise Filtering Ratio</string>
+			<string>噪点过滤比例</string>
 			<key>Titles</key>
 			<array>
-				<string>Keep Largest Only</string>
+				<string>只保留最大的一块</string>
 				<string>0.9</string>
 				<string>0.8</string>
 				<string>0.7</string>
@@ -416,23 +416,23 @@
 			<string>PSMultiValueSpecifier</string>
 			<key>Values</key>
 			<array>
-				<real>1</real>
-				<real>0.90000000000000002</real>
-				<real>0.80000000000000004</real>
-				<real>0.69999999999999996</real>
-				<real>0.59999999999999998</real>
+				<real>1.0</real>
+				<real>0.9</real>
+				<real>0.8</real>
+				<real>0.7</real>
+				<real>0.6</real>
 				<real>0.5</real>
-				<real>0.40000000000000002</real>
-				<real>0.29999999999999999</real>
-				<real>0.20000000000000001</real>
-				<real>0.10000000000000001</real>
-				<real>0.050000000000000003</real>
+				<real>0.4</real>
+				<real>0.3</real>
+				<real>0.2</real>
+				<real>0.1</real>
+				<real>0.05</real>
 				<real>0.01</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Title</key>
-			<string>Measuring</string>
+			<string>测量</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
@@ -442,11 +442,11 @@
 			<key>Key</key>
 			<string>MeasuringUnits</string>
 			<key>Title</key>
-			<string>System of Units</string>
+			<string>单位制</string>
 			<key>Titles</key>
 			<array>
-				<string>Metric</string>
-				<string>Imperial</string>
+				<string>公制</string>
+				<string>英制</string>
 			</array>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
@@ -458,11 +458,11 @@
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
-			<real>0.050000000000000003</real>
+			<real>0.05</real>
 			<key>Key</key>
 			<string>MeasuringTextSize</string>
 			<key>Title</key>
-			<string>Text Size</string>
+			<string>文字大小</string>
 			<key>Titles</key>
 			<array>
 				<string>30 cm</string>
@@ -476,19 +476,19 @@
 			<string>PSMultiValueSpecifier</string>
 			<key>Values</key>
 			<array>
-				<real>0.29999999999999999</real>
+				<real>0.3</real>
 				<real>0.25</real>
-				<real>0.20000000000000001</real>
-				<real>0.14999999999999999</real>
-				<real>0.10000000000000001</real>
-				<real>0.050000000000000003</real>
+				<real>0.2</real>
+				<real>0.15</real>
+				<real>0.1</real>
+				<real>0.05</real>
 			</array>
 		</dict>
 		<dict>
 			<key>FooterText</key>
 			<string>Copyright (c) 2010-2026, Mathieu Labbe - IntRoLab - Université de Sherbrooke. All rights reserved.</string>
 			<key>Title</key>
-			<string>About</string>
+			<string>关于</string>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 		</dict>
@@ -498,7 +498,7 @@
 			<key>Key</key>
 			<string>Version</string>
 			<key>Title</key>
-			<string>Version</string>
+			<string>版本</string>
 			<key>Type</key>
 			<string>PSTitleValueSpecifier</string>
 		</dict>
@@ -508,7 +508,7 @@
 			<key>Key</key>
 			<string></string>
 			<key>Title</key>
-			<string>License</string>
+			<string>许可证</string>
 			<key>Type</key>
 			<string>PSChildPaneSpecifier</string>
 		</dict>

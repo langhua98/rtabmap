@@ -10,13 +10,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>When resuming mapping, wait for a relocalization on the current map before starting a new map.</string>
+			<string>继续扫描时，先等重新定位到当前模型上，再开始新的部分。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Append Mode</string>
+			<string>追加扫描</string>
 			<key>Key</key>
 			<string>AppendMode</string>
 			<key>DefaultValue</key>
@@ -26,13 +26,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Save HD images of the color camera if you want very detailed textures. More memory will be required.</string>
+			<string>保存彩色相机的高清图像，贴图会更细致，但更占内存。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>HD Mode</string>
+			<string>高清模式</string>
 			<key>Key</key>
 			<string>HDMode</string>
 			<key>DefaultValue</key>
@@ -42,13 +42,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>When this is disabled (or the phone doesn&apos;t have LiDAR), only tracked features from ARKit will be mapped into a point cloud.</string>
+			<string>关掉后（或者手机没有激光雷达），只会把 ARKit 追踪到的特征点记成点云。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>LiDAR Mode</string>
+			<string>激光雷达模式</string>
 			<key>Key</key>
 			<string>LidarMode</string>
 			<key>DefaultValue</key>
@@ -58,7 +58,7 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Choosing between high and low depth confidence depends on the application. If precise geometry is critical, prioritize high depth confidence even if it means fewer points. If you need a dense point cloud for analysis, even in areas with weak LiDAR signal, a lower depth confidence might be suitable at the cost of highly interpolated points (that could give a wavy look of some surfaces). Note: it is possible to change confidence level in post-processing.</string>
+			<string>要几何精确，就选高置信度，点会少一些；要点云更密（包括激光雷达信号弱的地方），可以选低置信度，但插值点多，有些表面会显得起伏。后期处理时也可以再改。</string>
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
@@ -66,12 +66,12 @@
 			<key>Key</key>
 			<string>DepthConfidence</string>
 			<key>Title</key>
-			<string>Depth Confidence</string>
+			<string>深度置信度</string>
 			<key>Titles</key>
 			<array>
-				<string>High</string>
-				<string>Medium</string>
-				<string>Low</string>
+				<string>高</string>
+				<string>中</string>
+				<string>低</string>
 			</array>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
@@ -86,13 +86,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Smooth the point clouds. Note that this can be changed in post-processing.</string>
+			<string>平滑点云。后期处理时也可以再改。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Smoothing</string>
+			<string>平滑</string>
 			<key>Key</key>
 			<string>Smoothing</string>
 			<key>DefaultValue</key>
@@ -102,20 +102,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Filter interpolated depth pixels between foreground and background objects. Note that values can be changed in post-processing.</string>
+			<string>过滤前景和背景交界处插值出来的深度点。后期处理时也可以再改。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Depth Bleeding Filter Error</string>
+			<string>深度边缘过滤误差</string>
 			<key>Key</key>
 			<string>DepthBleedingError</string>
 			<key>DefaultValue</key>
 			<string>0</string>
 			<key>Titles</key>
 			<array>
-				<string>Disabled</string>
+				<string>关闭</string>
 				<string>2.5 cm</string>
 				<string>5 cm</string>
 				<string>10 cm</string>
@@ -140,20 +140,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Filter ARKit&apos;s re-localization events to avoid jumps in odometry when creating a map with RTAB-Map, which would cause large drift errors that are difficult to correct. Set an acceleration threshold to detect those events.</string>
+			<string>过滤 ARKit 的重新定位，避免位置突然跳动造成难以修正的漂移。用加速度阈值来判断。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>ARKit Re-Localization Acceleration Threshold</string>
+			<string>ARKit 重新定位加速度阈值</string>
 			<key>Key</key>
 			<string>UpstreamRelocalizationFilteringAccThr</string>
 			<key>DefaultValue</key>
 			<string>58.8399</string>
 			<key>Titles</key>
 			<array>
-				<string>Disabled</string>
+				<string>关闭</string>
 				<string>10 g</string>
 				<string>9 g</string>
 				<string>8 g</string>
@@ -182,22 +182,22 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
-			<string>Core</string>
+			<string>核心</string>
 			<key>FooterText</key>
-			<string>Rate at which a new node is added to map.</string>
+			<string>往模型里添加新节点的频率。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Update Rate</string>
+			<string>更新频率</string>
 			<key>Key</key>
 			<string>UpdateRate</string>
 			<key>DefaultValue</key>
 			<string>1</string>
 			<key>Titles</key>
 			<array>
-				<string>Max</string>
+				<string>最大</string>
 				<string>5 Hz</string>
 				<string>4 Hz</string>
 				<string>3 Hz</string>
@@ -220,24 +220,24 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Images taken when the camera is moving too fast are ignored to avoid blurry textures.</string>
+			<string>相机移动太快时拍的图会被忽略，避免贴图模糊。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Maximum Motion Speed</string>
+			<string>最大移动速度</string>
 			<key>Key</key>
 			<string>MaximumMotionSpeed</string>
 			<key>DefaultValue</key>
 			<string>0</string>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
-				<string>High</string>
-				<string>Medium</string>
-				<string>Low</string>
-				<string>Very Low</string>
+				<string>不限制</string>
+				<string>高</string>
+				<string>中</string>
+				<string>低</string>
+				<string>很低</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -252,20 +252,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Maximum time allowed for map updates. If time to add a new node is above this theshold, some old parts of the map are temporarly forgotten to reduce time of next updates.</string>
+			<string>每次更新模型的最长耗时。超过后会暂时忘掉一些旧的部分，加快之后的更新。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Time Limit</string>
+			<string>时间上限</string>
 			<key>Key</key>
 			<string>TimeLimit</string>
 			<key>DefaultValue</key>
 			<string>0</string>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
+				<string>不限制</string>
 				<string>1500 ms</string>
 				<string>1400 ms</string>
 				<string>1300 ms</string>
@@ -300,26 +300,26 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Maximum nodes kept in working memory.</string>
+			<string>工作内存里最多保留的节点数。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Memory Limit</string>
+			<string>内存上限</string>
 			<key>Key</key>
 			<string>MemoryLimit</string>
 			<key>DefaultValue</key>
 			<string>0</string>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
-				<string>500 nodes</string>
-				<string>400 nodes</string>
-				<string>300 nodes</string>
-				<string>200 nodes</string>
-				<string>100 nodes</string>
-				<string>50 nodes</string>
+				<string>不限制</string>
+				<string>500 个节点</string>
+				<string>400 个节点</string>
+				<string>300 个节点</string>
+				<string>200 个节点</string>
+				<string>100 个节点</string>
+				<string>50 个节点</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -336,13 +336,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Proximity detections are loop closures found by comparing current frame with frames inside a radius of the current pose. Unlike global loop closure detection, this approach is dependent of odometry.</string>
+			<string>邻近检测是把当前帧和附近位置的帧比较来找回环。和全局回环检测不同，它依赖里程计。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Proximity Detection</string>
+			<string>邻近检测</string>
 			<key>Key</key>
 			<string>ProximityDetection</string>
 			<key>DefaultValue</key>
@@ -352,13 +352,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Threshold at which loop closure hypotheses are accepted. Higher means more robust to false loop closures while rejecting more good loop closures.</string>
+			<string>接受回环的阈值。越高越不容易误判，但也会漏掉更多真正的回环。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Loop Closure Threshold</string>
+			<string>回环阈值</string>
 			<key>Key</key>
 			<string>LoopClosureThreshold</string>
 			<key>DefaultValue</key>
@@ -396,20 +396,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Threshold at which consecutive images are considered the same, so the corresponding node&apos;s weight is increased. The background turns dark blue when this happens.</string>
+			<string>连续两张图相似到这个程度就算同一处，对应节点的权重会增加，此时背景变成深蓝色。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Similarity Threshold</string>
+			<string>相似度阈值</string>
 			<key>Key</key>
 			<string>SimilarityThreshold</string>
 			<key>DefaultValue</key>
 			<real>0.3</real>
 			<key>Titles</key>
 			<array>
-				<string>Disabled</string>
+				<string>关闭</string>
 				<string>0.60</string>
 				<string>0.50</string>
 				<string>0.40</string>
@@ -419,7 +419,7 @@
 			</array>
 			<key>Values</key>
 			<array>
-				<real>1</real>
+				<real>1.0</real>
 				<real>0.6</real>
 				<real>0.5</real>
 				<real>0.4</real>
@@ -432,13 +432,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Minimum visual inliers to accept a loop closure.</string>
+			<string>接受回环所需的最少视觉内点数。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Min Inliers</string>
+			<string>最少内点</string>
 			<key>Key</key>
 			<string>MinInliers</string>
 			<key>DefaultValue</key>
@@ -466,13 +466,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Reject any loop closures causing error corrections in the map higher than this factor of the link&apos;s variance.</string>
+			<string>如果回环带来的修正超过连接方差的这个倍数，就拒绝这个回环。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Max Optimization Error</string>
+			<string>最大优化误差</string>
 			<key>Key</key>
 			<string>MaxOptimizationError</string>
 			<key>DefaultValue</key>
@@ -487,39 +487,39 @@
 				<string>1.5x</string>
 				<string>1x</string>
 				<string>0.5x</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Values</key>
 			<array>
-				<real>4</real>
+				<real>4.0</real>
 				<real>3.5</real>
-				<real>3</real>
+				<real>3.0</real>
 				<real>2.5</real>
-				<real>2</real>
+				<real>2.0</real>
 				<real>1.5</real>
-				<real>1</real>
+				<real>1.0</real>
 				<real>0.5</real>
-				<real>0</real>
+				<real>0.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Extracting more features per image would result in better loop closure hypotheses but more processing time is required.</string>
+			<string>每张图提取更多特征，回环判断更准，但更耗时。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Max Features Extracted (Vocabulary)</string>
+			<string>最多特征数（词典）</string>
 			<key>Key</key>
 			<string>MaxFeaturesExtractedVocabulary</string>
 			<key>DefaultValue</key>
 			<string>400</string>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
+				<string>不限制</string>
 				<string>5000</string>
 				<string>4500</string>
 				<string>4000</string>
@@ -538,7 +538,7 @@
 				<string>300</string>
 				<string>200</string>
 				<string>100</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -568,20 +568,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Extracting more features per image would result in better loop closure transforms but more processing time is required.</string>
+			<string>每张图提取更多特征，回环位置算得更准，但更耗时。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Max Features Extracted (Loop Closure)</string>
+			<string>最多特征数（回环）</string>
 			<key>Key</key>
 			<string>MaxFeaturesExtractedLoopClosure</string>
 			<key>DefaultValue</key>
 			<string>400</string>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
+				<string>不限制</string>
 				<string>5000</string>
 				<string>4500</string>
 				<string>4000</string>
@@ -628,13 +628,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>BRIEF, FREAK and ORB are binary features, which are fast to compute and use less memory. SURF and SIFT are high dimensional float descriptors (rotation/scale/shear-invariant), so they use more memory and CPU but they are significantly better to detect loop closures in large environments. Warning: Changing feature type will automatically reset the map!</string>
+			<string>BRIEF、FREAK 和 ORB 是二进制特征，计算快、占内存少。SURF 和 SIFT 是高维浮点特征，更占内存和 CPU，但在大场景里识别回环明显更准。注意：更换特征类型会自动清空当前模型！</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Feature Type</string>
+			<string>特征类型</string>
 			<key>Key</key>
 			<string>FeatureType</string>
 			<key>DefaultValue</key>
@@ -662,13 +662,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Graph optimization approach.</string>
+			<string>图优化使用的算法。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Graph Optimizer</string>
+			<string>图优化方法</string>
 			<key>Key</key>
 			<string>GraphOptimizer</string>
 			<key>DefaultValue</key>
@@ -688,13 +688,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>The map&apos;s graph is optimized from the last node. The map is moved when a loop closure happens instead of jumping the current pose back to localized area.</string>
+			<string>从最后一个节点开始优化。发生回环时移动模型，而不是让当前位置跳回去。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Optimization from Graph End</string>
+			<string>从图末端优化</string>
 			<key>Key</key>
 			<string>OptimizationfromGraphEnd</string>
 			<key>DefaultValue</key>
@@ -704,13 +704,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Used only in localization mode (when clicking First-P. View during visualization). This is used to get smoother localizations and to verify localization transforms (when Max Optimization Error is not disabled) to make sure we don&apos;t teleport to a location very similar to one we previously localized on.</string>
+			<string>只在定位模式下使用（查看模型时点第一人称）。让定位更平滑，并校验定位结果（最大优化误差没关闭时），避免跳到一个长得很像的地方。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Maximum odometry cache size</string>
+			<string>最大里程计缓存</string>
 			<key>Key</key>
 			<string>MaximumOdometryCacheSize</string>
 			<key>DefaultValue</key>
@@ -727,7 +727,7 @@
 				<string>20</string>
 				<string>10</string>
 				<string>5</string>
-				<string>Disabled</string>
+				<string>关闭</string>
 			</array>
 			<key>Values</key>
 			<array>
@@ -748,20 +748,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>ArUco or AprilTag markers can be detected for localization and graph optimization. Marker number should be &gt;0.</string>
+			<string>可以识别 ArUco 或 AprilTag 标记，用来定位和优化。标记编号要大于 0。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>ArUco/AprilTag Marker Detection</string>
+			<string>ArUco/AprilTag 标记识别</string>
 			<key>Key</key>
 			<string>ArUcoMarkerDetection</string>
 			<key>DefaultValue</key>
 			<integer>-1</integer>
 			<key>Titles</key>
 			<array>
-				<string>Disabled</string>
+				<string>关闭</string>
 				<string>4X4_50</string>
 				<string>4X4_100</string>
 				<string>4X4_250</string>
@@ -814,13 +814,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Size of markers are automatically initialized on the first marker seen. All markers should have the same size. This value is the maximum depth error to do the initialization to get accurate size of the tag. The lower it is, the more perpendicular the camera should be from the marker to do initialization, but size estimated would be more accurate.</string>
+			<string>标记尺寸在第一次看到标记时自动确定，所有标记要一样大。这里是初始化时允许的最大深度误差：越小，相机越要正对标记，但尺寸估得越准。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Marker Depth Error Estimation</string>
+			<string>标记深度误差估计</string>
 			<key>Key</key>
 			<string>MarkerDepthErrorEstimation</string>
 			<key>DefaultValue</key>
@@ -852,7 +852,7 @@
 				<real>0.04</real>
 				<real>0.05</real>
 				<real>0.06</real>
-				<real>0.07000000000000001</real>
+				<real>0.07</real>
 				<real>0.08</real>
 				<real>0.09</real>
 				<real>0.1</real>
@@ -861,20 +861,20 @@
 				<real>0.3</real>
 				<real>0.4</real>
 				<real>0.5</real>
-				<real>1</real>
+				<real>1.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>If marker size is 0, marker size is estimated using depth camera on first detection, then the same size is assumed for next detections, thus all markers should have the same size (markers could then be detected farther from the camera). When the marker size is set &gt;0, all markers are estimated with this parameter (this can be useful on devices without depth camera). Finally, if marker size is &lt;0, the size of each marker is estimated the first time they are detected using the depth camera (thus markers can have different size). Note that if the marker is already in the database with a known size, the size contained in the database is used directly.</string>
+			<string>标记尺寸为 0：第一次识别时用深度相机估算，之后所有标记都按这个尺寸（所以标记要一样大）。大于 0：所有标记都用这个尺寸（适合没有深度相机的设备）。小于 0：每个标记第一次识别时分别估算（标记可以大小不同）。数据库里已有尺寸的标记，直接用数据库里的尺寸。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSTextFieldSpecifier</string>
 			<key>Title</key>
-			<string>Marker Size (cm)</string>
+			<string>标记尺寸（厘米）</string>
 			<key>Key</key>
 			<string>MarkerSize</string>
 			<key>DefaultValue</key>
@@ -886,20 +886,20 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Maximum range at which the markers are detected. Long range increases the estimated orientation error of the tag, which can then cause bad graph optimization. Using larger tags can improve orientation estimation at longer range.</string>
+			<string>标记的最远识别距离。距离越远，朝向误差越大，可能导致优化变差。用更大的标记可以改善远处的朝向估计。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Marker Maximum Range</string>
+			<string>标记最远识别距离</string>
 			<key>Key</key>
 			<string>MarkerMaxRange</string>
 			<key>DefaultValue</key>
-			<real>2</real>
+			<real>2.0</real>
 			<key>Titles</key>
 			<array>
-				<string>No Limit</string>
+				<string>不限制</string>
 				<string>0.5 m</string>
 				<string>1 m</string>
 				<string>2 m</string>
@@ -918,33 +918,33 @@
 			<array>
 				<string>0</string>
 				<real>0.5</real>
-				<real>1</real>
-				<real>2</real>
-				<real>3</real>
-				<real>4</real>
-				<real>5</real>
-				<real>6</real>
-				<real>7</real>
-				<real>8</real>
-				<real>9</real>
+				<real>1.0</real>
+				<real>2.0</real>
+				<real>3.0</real>
+				<real>4.0</real>
+				<real>5.0</real>
+				<real>6.0</real>
+				<real>7.0</real>
+				<real>8.0</real>
+				<real>9.0</real>
 				<integer>10</integer>
-				<real>15</real>
-				<real>20</real>
+				<real>15.0</real>
+				<real>20.0</real>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
-			<string>Database</string>
+			<string>数据库</string>
 			<key>FooterText</key>
-			<string>Discarded frames while not moving are still saved in database. Useful to replay exactly the scanning on RTAB-Map Desktop.</string>
+			<string>静止时丢弃的帧也存进数据库，方便在电脑版 RTAB-Map 上完整回放。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Save All Frames in Database</string>
+			<string>所有帧都存进数据库</string>
 			<key>Key</key>
 			<string>SaveAllFramesInDatabase</string>
 			<key>DefaultValue</key>
@@ -954,13 +954,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>Save GPS to database.</string>
+			<string>把 GPS 位置存进数据库。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Save GPS</string>
+			<string>保存 GPS</string>
 			<key>Key</key>
 			<string>SaveGPS</string>
 			<key>DefaultValue</key>
@@ -970,13 +970,13 @@
 			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>FooterText</key>
-			<string>The database is kept in RAM for fast access. Set to false to reduce RAM used at the cost of slower access. This parameter is applied on reset or when a database is opened. Important: if enabled, the database cannot be recovered in case of the App crashes for some reason (e.g., low battery).</string>
+			<string>数据库放在内存里，访问更快；关掉可以省内存，但会变慢。重新开始或打开扫描时生效。注意：打开时，如果 App 意外退出（比如没电），数据无法恢复。</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Database in Memory</string>
+			<string>数据库放在内存里</string>
 			<key>Key</key>
 			<string>DatabaseInMemory</string>
 			<key>DefaultValue</key>
