@@ -36,7 +36,7 @@
 			<key>Key</key>
 			<string>HDMode</string>
 			<key>DefaultValue</key>
-			<false/>
+			<true/>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -194,7 +194,7 @@
 			<key>Key</key>
 			<string>UpdateRate</string>
 			<key>DefaultValue</key>
-			<string>1</string>
+			<string>2</string>
 			<key>Titles</key>
 			<array>
 				<string>最大</string>

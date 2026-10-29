@@ -2157,7 +2157,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
                         self.save()
                     }
                     alert.addAction(alertActionNo)
-                    let alertActionYes = UIAlertAction(title: "是", style: .default) {
+                    let alertActionYes = UIAlertAction(title: depthUsed ? "生成贴图模型（推荐）" : "是", style: .default) {
                         (UIAlertAction) -> Void in
                         self.optimization(withStandardMeshExport: depthUsed, approach: -1)
                     }

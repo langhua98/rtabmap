@@ -37,17 +37,28 @@ func setDefaultsFromSettingsBundle() {
 }
 
 /// setDefaultsFromSettingsBundle() never overwrites a stored value, so installs that ran an
-/// older build keep the old defaults that left holes in textured meshes. Apply the new ones once.
+/// older build keep old defaults. Apply each revision of new defaults once.
 func migrateHoleFillingDefaults() {
     let defaults = UserDefaults.standard
     let revisionKey = "HoleFillingDefaultsRevision"
-    guard defaults.integer(forKey: revisionKey) < 1 else { return }
-    defaults.set(1, forKey: "DepthConfidence")
-    defaults.set(false, forKey: "CleanMesh")
-    defaults.set(1, forKey: "TextureVertexColorPolicy")
-    defaults.set(5.0, forKey: "MaxTextureDistance")
-    defaults.set(4, forKey: "MaxDepth")
-    defaults.set(1, forKey: revisionKey)
+    let revision = defaults.integer(forKey: revisionKey)
+    if revision < 1 {
+        defaults.set(1, forKey: "DepthConfidence")
+        defaults.set(false, forKey: "CleanMesh")
+        defaults.set(1, forKey: "TextureVertexColorPolicy")
+        defaults.set(5.0, forKey: "MaxTextureDistance")
+        defaults.set(4, forKey: "MaxDepth")
+    }
+    if revision < 2 {
+        // Sharper textures and fewer surfaces seen by no keyframe: 2 keyframes per second,
+        // full-resolution color images, higher on-device texture resolution, and up to
+        // 4 texture atlases when exporting.
+        defaults.set("2", forKey: "UpdateRate")
+        defaults.set(true, forKey: "HDMode")
+        defaults.set(2, forKey: "TextureResolution")
+        defaults.set(4, forKey: "MaximumOutputTextures")
+    }
+    defaults.set(2, forKey: revisionKey)
 }
 
 @main

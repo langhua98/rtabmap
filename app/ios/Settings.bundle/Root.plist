@@ -214,7 +214,7 @@
 		</dict>
 		<dict>
 			<key>DefaultValue</key>
-			<integer>4</integer>
+			<integer>2</integer>
 			<key>Key</key>
 			<string>TextureResolution</string>
 			<key>Title</key>
