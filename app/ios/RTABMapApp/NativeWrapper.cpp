@@ -279,6 +279,19 @@ bool exportGaussianSplatDatasetNative(const void *object, const char * directory
     return false;
 }
 
+float checkGaussianSplatCoverageNative(const void *object)
+{
+    if(object)
+    {
+        return native(object)->checkGaussianSplatCoverage();
+    }
+    else
+    {
+        UERROR("object is null!");
+    }
+    return -1.0f;
+}
+
 void initGlContentNative(const void *object) {
     if(object)
     {

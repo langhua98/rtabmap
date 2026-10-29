@@ -984,6 +984,9 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         fileMenuChildren.append(UIAction(title: "追加扫描", image: UIImage(systemName: "play.fill"), attributes: actionResumeEnabled ? [] : .disabled, state: .off, handler: { _ in
             self.resumeScan()
         }))
+        fileMenuChildren.append(UIAction(title: "检查哪里要补拍", image: UIImage(systemName: "viewfinder"), attributes: actionResumeEnabled ? [] : .disabled, state: .off, handler: { _ in
+            self.checkGaussianSplatCoverage()
+        }))
         if(actionMeasuringEnabled) {
             fileMenuChildren.append(measuringMenu)
         }
@@ -2575,6 +2578,59 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         })
     }
 
+    func checkGaussianSplatCoverage()
+    {
+        if(mState == State.STATE_VISUALIZING)
+        {
+            // the overlay is drawn on the map view, not on the optimized mesh
+            closeVisualization()
+            rtabmap!.postExportation(visualize: false)
+        }
+
+        let alertView = UIAlertController(title: "检查覆盖", message: "正在检查哪些地方照片不够，请稍候…", preferredStyle: .alert)
+        alertView.addAction(UIAlertAction(title: "取消", style: .cancel, handler: { _ in
+            self.dismiss(animated: true)
+            self.progressView = nil
+            self.rtabmap!.cancelProcessing()
+        }))
+
+        let previousState = mState
+        updateState(state: .STATE_PROCESSING)
+        self.progressView = addProgressView(alertView)
+
+        present(alertView, animated: true, completion: {
+            var weakRatio : Float = -1.0
+            DispatchQueue.background(background: {
+                weakRatio = self.rtabmap!.checkGaussianSplatCoverage()
+            }, completion:{
+                let canceled = self.progressView == nil
+                if !canceled
+                {
+                    self.dismiss(animated: true)
+                }
+                self.updateState(state: previousState)
+                if weakRatio < 0
+                {
+                    self.showToast(message: canceled ? "已取消" : "检查失败：清晰的照片太少", seconds: 3)
+                    return
+                }
+                let percent = Int(weakRatio*100)
+                let message = percent > 0
+                    ? "约 \(percent)% 的区域需要补拍，已在画面里标出：红色是照片太少，橙色是只从一个方向拍过。\n\n点「追加扫描」，先走回扫过的地方等它对上位置，再到标色的地方换几个高度和角度慢慢补拍。补完可以再检查一次。"
+                    : "覆盖很好，没有需要补拍的地方。"
+                let alert = UIAlertController(title: "检查结果", message: message, preferredStyle: .alert)
+                if percent > 0
+                {
+                    alert.addAction(UIAlertAction(title: "追加扫描", style: .default) { (UIAlertAction) -> Void in
+                        self.resumeScan()
+                    })
+                }
+                alert.addAction(UIAlertAction(title: "好", style: .cancel) { (UIAlertAction) -> Void in })
+                self.present(alert, animated: true, completion: nil)
+            })
+        })
+    }
+
     private func showGaussianSplatReport(_ report: [String: Any], zipUrl: URL)
     {
         let images = report["images"] as? Int ?? 0
@@ -2595,7 +2651,7 @@ class ViewController: GLKViewController, ARSessionDelegate, RTABMapObserver, UIP
         }
         if weakRatio > 0.3
         {
-            message += "\n\n约 \(Int(weakRatio*100))% 的区域照片太少，或只从一个方向拍过，泼溅后这些地方会糊或有洞（包里的 weak_areas.ply 标出了位置）。建议点「追加扫描」，走到这些地方换几个高度和角度慢慢补拍，然后重新导出。"
+            message += "\n\n约 \(Int(weakRatio*100))% 的区域照片太少，或只从一个方向拍过，泼溅后这些地方会糊或有洞（画面里已标红/橙，包里的 weak_areas.ply 也有）。建议点「追加扫描」，走到这些地方换几个高度和角度慢慢补拍，然后重新导出。"
         }
         else
         {

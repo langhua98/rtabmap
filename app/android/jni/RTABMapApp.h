@@ -187,6 +187,8 @@ class RTABMapApp : public UEventsHandler {
   // transforms.json, sharp keyframes, depths, init point cloud and a coverage
   // report) to directory. maxImages<=0 keeps every sharp, non-redundant frame.
   bool exportGaussianSplatDataset(const std::string & directory, int maxImages, bool withDepth);
+  // Same analysis without writing files: refreshes the weak areas overlay, returns the weak ratio (<0 on failure)
+  float checkGaussianSplatCoverage();
   int postProcessing(int approach);
   void clearMeasures();
   void showMeasures(bool x, bool y, bool z, bool custom);
@@ -329,6 +331,11 @@ class RTABMapApp : public UEventsHandler {
 	std::pair<rtabmap::RtabmapEventInit::Status, std::string> status_;
 
 	rtabmap::ProgressionStatus progressionStatus_;
+
+	boost::mutex weakAreasMutex_;
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr weakAreasCloud_;
+	bool weakAreasUpdated_ = false;
+	float weakAreasRatio_ = 0.0f;
     
 #ifndef __ANDROID__
     void * swiftClassPtr_;

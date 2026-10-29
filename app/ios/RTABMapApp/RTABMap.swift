@@ -241,6 +241,11 @@ class RTABMap {
         }
     }
     
+    func checkGaussianSplatCoverage() -> Float
+    {
+        return checkGaussianSplatCoverageNative(native_rtabmap)
+    }
+    
     func onTouchEvent(touch_count: Int, event: Int, x0: Float, y0: Float, x1: Float, y1: Float) {
         onTouchEventNative(native_rtabmap, Int32(touch_count), Int32(event), x0, y0, x1, y1)
     }

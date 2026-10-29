@@ -85,6 +85,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEBUG_RENDERING_PERFORMANCE
 
 const int g_optMeshId = -100;
+const int g_weakAreasId = -200; // Gaussian splatting coverage overlay
 
 const float g_bilateralFilteringSigmaS = 2.0f;
 const float g_bilateralFilteringSigmaR = 0.075f;
@@ -1837,6 +1838,10 @@ int RTABMapApp::Render()
 
 				main_scene_.clear();
 				clearSceneOnNextRender_ = false;
+				{
+					boost::mutex::scoped_lock lockWeak(weakAreasMutex_);
+					weakAreasCloud_.reset();
+				}
 				if(!openingDatabase_)
 				{
 					boost::mutex::scoped_lock  lock(meshesMutex_);
@@ -1859,9 +1864,24 @@ int RTABMapApp::Render()
                 measures_.clear();
 			}
 
+			{
+				// Gaussian splatting coverage overlay (cleared with the scene on a new scan)
+				boost::mutex::scoped_lock lock(weakAreasMutex_);
+				if(weakAreasUpdated_)
+				{
+					main_scene_.removeCloudOrMesh(g_weakAreasId);
+					weakAreasUpdated_ = false;
+				}
+				if(weakAreasCloud_.get() && !weakAreasCloud_->empty() && !main_scene_.hasCloud(g_weakAreasId))
+				{
+					main_scene_.addCloud(g_weakAreasId, weakAreasCloud_, pcl::IndicesPtr(), rtabmap::opengl_world_T_rtabmap_world);
+				}
+			}
+
 			// Did we lose OpenGL context? If so, recreate the context;
 			std::set<int> added = main_scene_.getAddedClouds();
 			added.erase(-1);
+			added.erase(g_weakAreasId);
 			if(!openingDatabase_)
 			{
 				boost::mutex::scoped_lock  lock(meshesMutex_);
@@ -5224,14 +5244,18 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 	const std::string depthsDir = directory + "/depths";
 	const std::string sparseDir = directory + "/sparse/0";
 	const std::string instantDir = directory + "/instantsplat";
-	UDirectory::makeDir(directory);
-	UDirectory::makeDir(imagesDir);
-	UDirectory::makeDir(directory + "/sparse");
-	UDirectory::makeDir(sparseDir);
-	UDirectory::makeDir(instantDir);
-	if(withDepth)
+	const bool writeFiles = !directory.empty(); // empty: only refresh the weak areas overlay
+	if(writeFiles)
 	{
-		UDirectory::makeDir(depthsDir);
+		UDirectory::makeDir(directory);
+		UDirectory::makeDir(imagesDir);
+		UDirectory::makeDir(directory + "/sparse");
+		UDirectory::makeDir(sparseDir);
+		UDirectory::makeDir(instantDir);
+		if(withDepth)
+		{
+			UDirectory::makeDir(depthsDir);
+		}
 	}
 
 	exporting_ = true;
@@ -5391,8 +5415,8 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 		const std::string name = gsFrameName(frame.id);
 		const cv::Mat & compressed = data.imageCompressed();
 		data.uncompressData();
-		bool written = false;
-		if(compressed.total() > 2 && compressed.ptr<unsigned char>()[0] == 0xFF && compressed.ptr<unsigned char>()[1] == 0xD8)
+		bool written = !writeFiles;
+		if(!written && compressed.total() > 2 && compressed.ptr<unsigned char>()[0] == 0xFF && compressed.ptr<unsigned char>()[1] == 0xD8)
 		{
 			// already a JPEG: copy the bytes, no re-encoding loss
 			std::ofstream f((imagesDir + "/" + name + ".jpg").c_str(), std::ios::binary);
@@ -5422,7 +5446,7 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 			{
 				depthM = depth;
 			}
-			if(withDepth)
+			if(writeFiles && withDepth)
 			{
 				cv::Mat depthMM;
 				depthM.convertTo(depthMM, CV_16U, 1000.0);
@@ -5457,13 +5481,33 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 	progressionStatus_.increment();
 
 	// Coverage: which 25 cm cells are seen by too few views, or only from one direction
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cells = assembled->empty() ? assembled : rtabmap::util3d::voxelize(assembled, 0.25f);
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr weak(new pcl::PointCloud<pcl::PointXYZRGB>);
+	const float cellSize = 0.25f;
+	struct GSCell { Eigen::Vector3f sum; int count; bool weak; bool fewViews; };
+	std::map<std::tuple<int,int,int>, GSCell> cells;
+	std::vector<std::tuple<int,int,int> > pointCells(assembled->size());
+	for(size_t i=0; i<assembled->size(); ++i)
+	{
+		const pcl::PointXYZRGB & pt = assembled->points[i];
+		pointCells[i] = std::make_tuple(int(std::floor(pt.x/cellSize)), int(std::floor(pt.y/cellSize)), int(std::floor(pt.z/cellSize)));
+		GSCell & cell = cells[pointCells[i]];
+		if(cell.count == 0)
+		{
+			cell.sum = Eigen::Vector3f(0, 0, 0);
+		}
+		cell.sum += Eigen::Vector3f(pt.x, pt.y, pt.z);
+		++cell.count;
+	}
+	std::vector<Eigen::Affine3f> worldToCams(frames.size());
+	for(size_t k=0; k<keptIdx.size(); ++k)
+	{
+		worldToCams[keptIdx[k]] = frames[keptIdx[k]].camPose.inverse().toEigen3f();
+	}
 	int weakFewViews = 0;
 	int weakOneDirection = 0;
-	for(size_t c=0; c<cells->size(); ++c)
+	for(std::map<std::tuple<int,int,int>, GSCell>::iterator iter=cells.begin(); iter!=cells.end(); ++iter)
 	{
-		const pcl::PointXYZRGB & cell = cells->points[c];
+		GSCell & cell = iter->second;
+		Eigen::Vector3f p = cell.sum / float(cell.count);
 		int views = 0;
 		Eigen::Vector3f dirSum(0, 0, 0);
 		for(size_t k=0; k<keptIdx.size(); ++k)
@@ -5473,9 +5517,7 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 			{
 				continue;
 			}
-			Eigen::Vector3f center(frame.camPose.x(), frame.camPose.y(), frame.camPose.z());
-			Eigen::Vector3f p(cell.x, cell.y, cell.z);
-			Eigen::Vector3f pc = frame.camPose.inverse().toEigen3f() * p;
+			Eigen::Vector3f pc = worldToCams[keptIdx[k]] * p;
 			if(pc.z() < 0.15f || pc.z() > maxDepth)
 			{
 				continue;
@@ -5493,19 +5535,43 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 				continue; // occluded
 			}
 			++views;
+			Eigen::Vector3f center(frame.camPose.x(), frame.camPose.y(), frame.camPose.z());
 			dirSum += (p - center).normalized();
 		}
-		bool fewViews = views < 3;
-		bool oneDirection = !fewViews && dirSum.norm()/float(views) > 0.99f; // all views within ~8 deg: no parallax
-		if(fewViews || oneDirection)
+		cell.fewViews = views < 3;
+		cell.weak = cell.fewViews || dirSum.norm()/float(views) > 0.99f; // all views within ~8 deg: no parallax
+		if(cell.weak)
 		{
-			fewViews ? ++weakFewViews : ++weakOneDirection;
-			pcl::PointXYZRGB pt = cell;
-			pt.r = 255; pt.g = fewViews ? 0 : 160; pt.b = 0;
+			cell.fewViews ? ++weakFewViews : ++weakOneDirection;
+		}
+	}
+	// Weak cells keep their surface points, red (too few views) or orange (one direction)
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr weak(new pcl::PointCloud<pcl::PointXYZRGB>);
+	for(size_t i=0; i<assembled->size(); ++i)
+	{
+		const GSCell & cell = cells.at(pointCells[i]);
+		if(cell.weak)
+		{
+			pcl::PointXYZRGB pt = assembled->points[i];
+			pt.r = 255; pt.g = cell.fewViews ? 0 : 140; pt.b = 0;
 			weak->push_back(pt);
 		}
 	}
-	float weakRatio = cells->empty() ? 1.0f : float(weak->size())/float(cells->size());
+	weak = rtabmap::util3d::voxelize(weak, 0.03f);
+	float weakRatio = cells.empty() ? 1.0f : float(weakFewViews+weakOneDirection)/float(cells.size());
+	{
+		boost::mutex::scoped_lock lock(weakAreasMutex_);
+		weakAreasCloud_ = weak;
+		weakAreasUpdated_ = true;
+		weakAreasRatio_ = weakRatio;
+	}
+	if(!writeFiles)
+	{
+		progressionStatus_.increment();
+		progressionStatus_.finish();
+		exporting_ = false;
+		return true;
+	}
 
 	// Everything below is written in the output world
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr assembledOut = rtabmap::util3d::transformPointCloud(assembled, worldOut);
@@ -5630,7 +5696,7 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 		   << "  \"capped\": " << capped << ",\n"
 		   << "  \"graph_nodes\": " << poses.size() << ",\n"
 		   << "  \"points\": " << assembledOut->size() << ",\n"
-		   << "  \"cells\": " << cells->size() << ",\n"
+		   << "  \"cells\": " << cells.size() << ",\n"
 		   << "  \"weak_cells_few_views\": " << weakFewViews << ",\n"
 		   << "  \"weak_cells_one_direction\": " << weakOneDirection << ",\n"
 		   << "  \"weak_ratio\": " << weakRatio << "\n"
@@ -5657,4 +5723,14 @@ bool RTABMapApp::exportGaussianSplatDataset(const std::string & directory, int m
 	progressionStatus_.finish();
 	exporting_ = false;
 	return true;
+}
+
+float RTABMapApp::checkGaussianSplatCoverage()
+{
+	if(!exportGaussianSplatDataset("", 0, false))
+	{
+		return -1.0f;
+	}
+	boost::mutex::scoped_lock lock(weakAreasMutex_);
+	return weakAreasRatio_;
 }
